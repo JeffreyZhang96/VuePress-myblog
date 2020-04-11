@@ -1,14 +1,24 @@
 {
-  "name": "vuepress",
+  "name": "myblog",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "vuepress dev docs",
-    "build": "vuepress build docs"
+    "build": "vuepress build docs",
+    "deploy": "bash deploy.sh"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JeffreyZhang96/vuepress.git"
+  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JeffreyZhang96/vuepress/issues"
+  },
+  "homepage": "https://github.com/JeffreyZhang96/vuepress#readme",
   "devDependencies": {
     "vuepress": "^1.4.0"
   }
