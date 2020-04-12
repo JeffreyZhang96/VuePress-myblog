@@ -1,4 +1,3 @@
-
 ## **跨站和跨域**
 
 首先要理解的一点就是跨站和跨域是不同的。同站(same-site)/跨站(cross-site)」和第一方(first-party)/第三方(third-party)是等价的。但是与浏览器同源策略（SOP）中的「同源(same-origin)/跨域(cross-origin)」是完全不同的概念。
@@ -90,15 +89,7 @@ CSP 本质上就是建立白名单，开发者明确告诉浏览器哪些外部�
 
 缺陷：某些情况下浏览器不会发送 Referer
 
-3. Cookie 的 SameSite 属性。
-
-SameSite 可以设置为三个值：Strict，Lax，None。
-
-Strict 模式：浏览器禁止第三方请求携带 Cookie，比如 example.com 以外的网站在向 example.com/api/login 发送请求时不会发送 Cookie。
-
-Lax 模式：相对宽松，只能在 get 方法提交表单况或者 a 标签发送 get 请求的情况下可以携带 Cookie，其他情况均不能。
-
-None 模式：默认模式，请求自动带上 Cookie。（chrome 80 后可能默认模式会改为 Lax）
+3. Cookie 的 SameSite
 
 4. CSRF Token
 
