@@ -1,4 +1,3 @@
-
 浏览器的主要功能是将用户选择的 web 资源呈现出来，它需要从服务器请求资源，并将其显示在浏览器窗口中，资源的格式通常
 是 HTML，也包括 PDF、image 及其他格式。用户用 URI（Uniform Resource Identifier 统一资源标识符）来指定所请
 求资源的位置。
@@ -445,7 +444,7 @@ async function A() {
 2. window.onerror
 
 ```js
-window.onerror = function (errorMessage, scriptURI, lineNo, columnNo, error) {
+window.onerror = function(errorMessage, scriptURI, lineNo, columnNo, error) {
   console.log("errorMessage: " + errorMessage); // 异常信息
   console.log("scriptURI: " + scriptURI); // 异常文件路径
   console.log("lineNo: " + lineNo); // 异常行号
@@ -469,6 +468,10 @@ img 标签、script 标签都可以添加 onerror 事件，用来捕获资源加
 ## **cookie**
 
 [HTTP cookies](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Cookies)
+
+HTTP 是一个无状态的协议，每次 http 请求都是独立、无关的，默认不需要保留状态信息。
+
+有时候需要保存一些状态，HTTP 为此引入了 Cookie。Cookie 本质上就是浏览器里面存储的一个很小的文本文件，内部以键值对的方式来存储。向同一个域名下发送请求，都会携带相同的 Cookie，服务器拿到 Cookie 进行解析，便能拿到客户端的状态。而服务端可以通过响应头中的 Set-Cookie 字段来对客户端写入 Cookie。
 
 ### cookie 作用
 
@@ -594,9 +597,11 @@ Image：图片一般放 CDN，大部分情况不需要 Cookie，故影响有限�
 
 ### cookie 缺点
 
-1. 4k
-2. 安全
-3. 增加请求大小
+1. 容量缺陷。Cookie 的体积上限只有 4KB，只能用来存储少量的信息。
+
+2. 性能缺陷。Cookie 紧跟域名，不管域名下面的某一个地址需不需要这个 Cookie ，请求都会携带上完整的 Cookie，这样随着请求数的增多，其实会造成巨大的性能浪费的，因为请求携带了很多不必要的内容。但可以通过 Domain 和 Path 指定作用域来解决。
+
+3. 安全缺陷。由于 Cookie 以纯文本的形式在浏览器和服务器中传递，很容易被非法用户截获，然后进行一系列的篡改，在 Cookie 的有效期内重新发送给服务器，这是相当危险的。另外，在 HttpOnly 为 false 的情况下，Cookie 信息能直接通过 JS 脚本来读取。
 
 ### 实现登录状态保持的两种方法 cookie、session 和 token
 
@@ -764,7 +769,7 @@ export default {
       delete val[key];
     }
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(val));
-  },
+  }
 };
 ```
 
@@ -836,12 +841,12 @@ function jsonp(url, jsonpCallback, success) {
   script.src = url;
   script.async = true;
   script.type = "text/javascript";
-  window[jsonpCallback] = function (data) {
+  window[jsonpCallback] = function(data) {
     success && success(data);
   };
   document.body.appendChild(script);
 }
-jsonp("", "callback", function (value) {
+jsonp("", "callback", function(value) {
   console.log(value);
 });
 ```
@@ -906,7 +911,7 @@ iframe 窗口的页面不会刷新，但是能知道 hash 的变化
 
 ```js
 // iframe 窗口
-window.onhashchange = function () {};
+window.onhashchange = function() {};
 ```
 
 同理，iframe 窗口也可以改变父窗口的 hash 来实现通信。
@@ -919,7 +924,7 @@ window.onhashchange = function () {};
 // 窗口A中
 window.postMessage("data", "http://A.com");
 // 窗口B中
-window.addEventListener("message", function (event) {
+window.addEventListener("message", function(event) {
   console.log(event.origin); // http://A.com
   console.log(event.source); // A 对象window引用
   console.log(event.data); // 数据
@@ -931,15 +936,15 @@ window.addEventListener("message", function (event) {
 ```js
 var ws = new WebSocket("wss://echo.websoket.org"); //这个是后端端口
 
-ws.onopen = function (evt) {
+ws.onopen = function(evt) {
   ws.send("some message");
 };
 
-ws.onmessage = function (evt) {
+ws.onmessage = function(evt) {
   console.log(evt.data);
 };
 
-ws.onclose = function (evt) {
+ws.onclose = function(evt) {
   console.log("连接关闭");
 };
 ```
@@ -1023,11 +1028,11 @@ var name = "weiqinl";
 function foo() {}
 module.exports = exports = {
   name,
-  foo,
+  foo
 };
 // moduleB.js
 var ma = require("./moduleA"); // 可以省略后缀.js
-exports.bar = function () {
+exports.bar = function() {
   ma.name === "weiqinl"; // true
   ma.foo(); // 执行foo方法
 };
@@ -1137,7 +1142,7 @@ import ed from './export-default.js'
 
 ```js
 //CMD 的方式
-define(function (require, exprots, module) {
+define(function(require, exprots, module) {
   var a = require("./a");
   a.dosmting();
   //省略 1W 行
@@ -1146,7 +1151,7 @@ define(function (require, exprots, module) {
 });
 
 //AMD 的方式
-define(["./a", "./b"], function (a, b) {
+define(["./a", "./b"], function(a, b) {
   a.dosmting();
   //省略 1W 行
   b.dosmting();

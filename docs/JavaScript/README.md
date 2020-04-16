@@ -8,7 +8,7 @@
 
 ```js
 //加法
-Number.prototype.add = function (arg) {
+Number.prototype.add = function(arg) {
   var r1, r2, m;
   try {
     r1 = this.toString().split(".")[1].length;
@@ -25,13 +25,13 @@ Number.prototype.add = function (arg) {
 };
 //减法
 
-Number.prototype.sub = function (arg) {
+Number.prototype.sub = function(arg) {
   return this.add(-arg);
 };
 
 //乘法
 
-Number.prototype.mul = function (arg) {
+Number.prototype.mul = function(arg) {
   var m = 0,
     s1 = this.toString(),
     s2 = arg.toString();
@@ -52,7 +52,7 @@ Number.prototype.mul = function (arg) {
 
 //除法
 
-Number.prototype.div = function (arg) {
+Number.prototype.div = function(arg) {
   var t1 = 0,
     t2 = 0,
     r1,
@@ -152,7 +152,7 @@ function getType(target) {
     // 一些包装类型
     "[object String]": "object - string",
     "[object Number]": "object - number",
-    "[object Boolean]": "object - boolean",
+    "[object Boolean]": "object - boolean"
   };
   const typeStr = Object.prototype.toString.call(target);
   return template[typeStr];
@@ -412,6 +412,17 @@ while ((result = patt.exec(str)) != null) {
 
 ### 闭包
 
+闭包是指有权访问另一个函数作用域中变量的函数，创建闭包的最常见的方式就是在一个函数内创建另一个函数，创建的函数可以
+访问到当前函数的局部变量
+
+用途
+
+1. 使函数外部能够访问到函数内部的变量。通过使用闭包，我们可以通过在外部调用闭包函数，从而在外
+   部访问到函数内部的变量，可以使用这种方法来创建私有变量
+
+2. 使已经运行结束的函数上下文中的变量对象继续留在内存中，因为闭包函数保留了这个变量对象的引用，所以
+   这个变量对象不会被回收
+
 [什么是闭包？闭包的作用，用法及优缺点](https://www.cnblogs.com/amcy/p/9912528.html##_label0)
 
 #### 计数器
@@ -435,7 +446,7 @@ function myIndex() {
     return index++;
   }
 
-  foo.clear = function () {
+  foo.clear = function() {
     index = 1;
   };
   return foo;
@@ -449,13 +460,13 @@ var foo = myIndex();
 ```js
 function Counter() {
   let count = 0;
-  this.plus = function () {
+  this.plus = function() {
     return ++count;
   };
-  this.minus = function () {
+  this.minus = function() {
     return --count;
   };
-  this.getCount = function () {
+  this.getCount = function() {
     return count;
   };
 }
@@ -527,7 +538,7 @@ console.log(testAdd(1)(2, 3));
 IIFE（ 立即调用函数表达式）是一个在定义时就会立即执行的 JavaScript 函数。
 
 ```js
-(function () {
+(function() {
   statements;
 })();
 ```
@@ -541,7 +552,7 @@ IIFE（ 立即调用函数表达式）是一个在定义时就会立即执行的
 当函数变成立即执行的函数表达式时，表达式中的变量不能从外部访问。
 
 ```js
-(function () {
+(function() {
   var name = "Barry";
 })();
 // 无法从外部访问变量 name
@@ -551,7 +562,7 @@ name; // 抛出错误："Uncaught ReferenceError: name is not defined"
 将 IIFE 分配给一个变量，不是存储 IIFE 本身，而是存储 IIFE 执行后返回的结果。
 
 ```js
-var result = (function () {
+var result = (function() {
   var name = "Barry";
   return name;
 })();
@@ -583,18 +594,18 @@ result; // "Barry"
 
 ```js
 function Foo() {
-  getName = function () {
+  getName = function() {
     console.log(1);
   };
   return this;
 }
-Foo.getName = function () {
+Foo.getName = function() {
   console.log(2);
 };
-Foo.prototype.getName = function () {
+Foo.prototype.getName = function() {
   console.log(3);
 };
-var getName = function () {
+var getName = function() {
   console.log(4);
 };
 
@@ -623,12 +634,12 @@ new Foo().getName();
 
 ```js
 let a = {
-  b: function () {
+  b: function() {
     console.log(this);
   },
   c: () => {
     console.log(this);
-  },
+  }
 };
 a.b(); // a
 a.c(); // window
@@ -647,7 +658,7 @@ function test() {
     fn: () => {
       var name1 = "black";
       console.log(this.name1);
-    },
+    }
   };
   return a;
 }
@@ -705,20 +716,20 @@ delete person.name //无效，严格模式下会报错
 ```js
 var person = {
   _age: 20, //下划线写法表示只能通过对象方法访问的属性
-  state: "young",
+  state: "young"
 };
 Object.defineProperty(person, "age", {
-  get: function () {
+  get: function() {
     return this._age;
   },
-  set: function (newVal) {
+  set: function(newVal) {
     if (newVal > 50) {
       this._age = newVal;
       this.state = "old";
     } else {
       this._age = newVal;
     }
-  },
+  }
 });
 ```
 
@@ -732,24 +743,24 @@ Object.defineProperty(person, "age", {
 var person = {};
 Object.defineProperties(person, {
   _age: {
-    value: 20,
+    value: 20
   },
   state: {
-    value: "young",
+    value: "young"
   },
   age: {
-    get: function () {
+    get: function() {
       return this._age;
     },
-    set: function (newVal) {
+    set: function(newVal) {
       if (newVal > 50) {
         this._age = newVal;
         this.state = "old";
       } else {
         this._age = newVal;
       }
-    },
-  },
+    }
+  }
 });
 
 var descriptor = Object.getOwnPropertyDescriptor(person, "_age");
@@ -789,7 +800,7 @@ Reflect.ownKeys({ [Symbol()]: 0, b: 0, 10: 0, 2: 0, a: 0 });
 //1
 JSON.stringify(obj) == "{}";
 //2
-var b = function (obj) {
+var b = function(obj) {
   for (let key in obj) {
     return false;
   }
@@ -899,7 +910,7 @@ Location 对象包含有关当前 URL 的信息。
 
 | 属性     | 描述                                         |
 | -------- | -------------------------------------------- |
-| hash     | 设置或返回从井号 (##) 开始的 URL（锚） 。     |
+| hash     | 设置或返回从井号 (##) 开始的 URL（锚） 。    |
 | host     | 设置或返回主机名和当前 URL 的端口号。        |
 | hostname | 设置或返回当前 URL 的主机名。                |
 | href     | 设置或返回完整的 URL。                       |
@@ -1071,7 +1082,7 @@ Screen 对象包含有关客户端显示屏幕的信息。 每个 Window 对象�
 
 ```js
 const div1 = document.getElementById("div1");
-document.addEventListener(div1, "click", (e) => {
+document.addEventListener(div1, "click", e => {
   e.preventDefault(); //防止跳转
   const target = e.target;
   if (target.nodeName === "A") {
@@ -1124,7 +1135,14 @@ function getStyle(obj, attr) {
 
 ### innerHTML、textContent、innerHTML
 
-[innerText、textContent 和 innerHTML 三者的区别](https://blog.csdn.net/qq_39207948/article/details/86099905)
+1. textContent 属性可以获取指定节点的文本及其后代节点中文本内容，也包括`<script>`和`<style>`元素中的内容 ，innerText 也是获取指定节点的文本及其后代节点中文本内容，但不能获取`<script>`和`<style>`元素中的内容，
+   innerHTML 是获取 HTML 文本结构内容
+
+2. textContent 会获取 display:none 的节点的文本；innerText 不作返回。
+
+3. 由于  innerText  受  CSS 样式的影响，它会触发重排（reflow），但 textContent  不会
+
+4. textContent 会显示空格和回车，innerText 只显示文本
 
 ## **原型与原型链**
 
@@ -1140,14 +1158,11 @@ JavaScript 是使用构造函数来新建一个对象的，每一个构造函数
 
 ### 获取原型的方法
 
-```js
+`p.__proto__`
 
- （1）p.__proto__
+`p.constructor.prototype`
 
- （2）p.constructor.prototype
-
- （3）Object.getPrototypeOf(p)
-```
+`Object.getPrototypeOf(p)`
 
 ### instanceof 原理
 
@@ -1182,7 +1197,7 @@ function _new() {
 ```
 
 ```js
-Object.create() = function (obj) {
+Object.create() = function(obj) {
   function Fn() {}
   Fn.prototype = obj;
   return new Fn();
@@ -1220,7 +1235,7 @@ CHILD.prototype.constructor = CHILD;
 function A(x) {
   this.x = x;
 }
-A.prototype.getX = function () {
+A.prototype.getX = function() {
   console.log(this.x);
 };
 function B(y) {
@@ -1230,7 +1245,7 @@ function B(y) {
 B.prototype = new A(100);
 B.prototype.constructor = B;
 ////////////////////////
-B.prototype.getY = function () {
+B.prototype.getY = function() {
   console.log(this.y);
 };
 let b = new B(200);
@@ -1256,7 +1271,7 @@ b.y; //200
 function A(x) {
   this.x = x;
 }
-A.prototype.getX = function () {
+A.prototype.getX = function() {
   console.log(this.x);
 };
 function B(y) {
@@ -1265,7 +1280,7 @@ function B(y) {
   A.call(this, 100);
   ////////////////////////
 }
-B.prototype.getY = function () {
+B.prototype.getY = function() {
   console.log(this.y);
 };
 let b = new B(200);
@@ -1288,7 +1303,7 @@ b.getY(); //200
 function A(x) {
   this.x = x;
 }
-A.prototype.getX = function () {
+A.prototype.getX = function() {
   console.log(this.x);
 };
 function B(y) {
@@ -1301,7 +1316,7 @@ function B(y) {
 B.prototype = new A();
 B.prototype.constructor = B;
 ////////////////////////
-B.prototype.getY = function () {
+B.prototype.getY = function() {
   console.log(this.y);
 };
 let b = new B(200);
@@ -1320,7 +1335,7 @@ b.y; //200
 function A(x) {
   this.x = x;
 }
-A.prototype.getX = function () {
+A.prototype.getX = function() {
   console.log(this.x);
 };
 
@@ -1334,7 +1349,7 @@ function B(y) {
 B.prototype = Object.create(A.prototype);
 B.prototype.constructor = B;
 ////////////////////////
-B.prototype.getY = function () {
+B.prototype.getY = function() {
   console.log(this.y);
 };
 let b = new B(200);
@@ -1350,7 +1365,7 @@ b.y; //200
 
 ```js
 //Object.create(obj):创建一个空对象，让空对象__proto__指向obj
-Object.create() = function (obj) {
+Object.create() = function(obj) {
   function Fn() {}
   Fn.prototype = obj;
   return new Fn();
@@ -1395,7 +1410,7 @@ function ajax(url) {
   const p = new Promise((resolve, reject) => {
     let xhr = new XMLHttpRequester();
     xhr.open("GET", url, true);
-    xhr.onreadystatechange = function () {
+    xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
           resolve(xhr.responseText);
@@ -1411,10 +1426,10 @@ function ajax(url) {
 
 const url = "/";
 ajax(url)
-  .then((res) => {
+  .then(res => {
     console.log(res);
   })
-  .catch((err) => {
+  .catch(err => {
     console.error(err);
   });
 ```
@@ -1439,7 +1454,7 @@ xhr.withCredentials = true;
 
 // Fetch
 fetch(url, {
-  credentials: "include",
+  credentials: "include"
 });
 ```
 
@@ -1460,7 +1475,7 @@ let controller = new AbortController();
 let signal = controller.signal;
 
 fetch(url, {
-  signal,
+  signal
 });
 
 controller.abort();
@@ -1774,7 +1789,7 @@ Reflect.ownKeys(myClass.prototype);
 
 ```js
 function wait() {
-  return new Promise((resolve) => setTimeout(resolve, 1000));
+  return new Promise(resolve => setTimeout(resolve, 1000));
 }
 
 async function main() {
@@ -1797,7 +1812,7 @@ main();
 
 ```js
 function wait() {
-  return new Promise((resolve) => setTimeout(resolve, 1000));
+  return new Promise(resolve => setTimeout(resolve, 1000));
 }
 
 async function main() {
@@ -1856,7 +1871,7 @@ onXXXX：
 1.
 
 ```js
-obj.onclick = function () {
+obj.onclick = function() {
   //do Something...
 };
 ```
@@ -1986,7 +2001,7 @@ class events {
   // 发布事件，触发观察者回调事件
   publish(type, ...args) {
     if (this.topics.hasOwnProperty(type)) {
-      this.topics[type].forEach((fn) => fn(...args));
+      this.topics[type].forEach(fn => fn(...args));
     }
   }
   // 移除主题的一个观察者的回调事件

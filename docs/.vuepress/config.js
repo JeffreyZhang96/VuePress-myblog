@@ -1,6 +1,7 @@
 module.exports = {
+  theme: 'reco',
   themeConfig: {
-    logo: "/assets/img/logo.jpg",
+    logo: "/logo.png",
     nav: [
       {
         text: "基础",
