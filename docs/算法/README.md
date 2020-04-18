@@ -1,3 +1,7 @@
+---
+title: 算法
+---
+
 ## **数据结构**
 
 ### 数组
@@ -93,7 +97,22 @@ for(all possible case){
 
 ### 动态规划
 
-一种数学优化的方法，同时也是编程的方法
+1. 其本质是利用申请的空间来记录每个暴力搜索的计算结果，下次要用结果的时候直接使用，而不再进行重复的递归过程
+2. 动态规划规定每一种递归状态的计算顺序，依次计算
+
+暴力递归题目可以优化成动态规划方法的大体过程
+
+1. 实现暴力递归方法
+2. 在暴力搜索方法的函数中看看哪些参数可以代表递归过程
+3. 找到代表递归过程的参数之后,记忆化搜索的方法非常容易实现
+4. 通过分析记忆化搜索的依赖路径,进而实现动态规划
+5. 根据记忆化搜索方法改出动态规划方法,进而看看是否能化简,如果能化简,还能实现时间复杂度更低的动态规划方法
+
+动态规划方法的关键点
+
+1. 最优化原理,也就是最优子结构性质。这指的是最优化策略具有这样的性质,不论过去状态和决策如何,对前面的决策所形成的状态而言,余下的诸决策必须构成最优策略。简单来说就是一个最优化策略的子策略总是最优的,如果一个问题满足最优化原理就称其具有最优子结构性质
+2. 无后效性。指的是某状态下决策的收益,只与状态和决策相关,与到达该状态的方式无关
+3. 子问题的重疊性,动态规划将原来具有指数级时间复杂度的暴力搜索算法改进成了具有多项式时间复杂度的算法。其中的关键在于解决冗余,这是动态规划算法的根本目的。
 
 重要属性
 
@@ -274,7 +293,43 @@ var printNumbers = function(n) {
 };
 ```
 
-### 不用加减乘除做加法
+### 交换数字 msjd16.01
+
+```js
+var swapNumbers = function(numbers) {
+  numbers[0] = numbers[0] ^ numbers[1];
+  numbers[1] = numbers[0] ^ numbers[1];
+  numbers[0] = numbers[0] ^ numbers[1];
+  return numbers;
+};
+```
+
+### 最大数值 msjd16.07
+
+编写一个方法，找出两个数字 a 和 b 中最大的那一个。不得使用 if-else 或其他比较运算符
+
+```js
+var maximum = function(a, b) {
+  let c = a - b;
+  let as = sign(a);
+  let bs = sign(b);
+  let cs = sign(c);
+  let difab = as ^ bs;
+  let sameab = flip(difab);
+  let returnA = difab * as + sameab * cs;
+  let returnB = flip(returnA);
+  return a * returnA + b * returnB;
+};
+
+var sign = function(num) {
+  return flip((num >> 31) & 1);
+};
+var flip = function(num) {
+  return num ^ 1;
+};
+```
+
+### 不用加减乘除做加法 jz65 msjd17.01
 
 ```js
 var add = function(a, b) {
@@ -294,8 +349,8 @@ function counts(str) {
   //let arr = str.match(/\w+/g);
   let map = new Map();
   let ret = [[], 0];
-  arr.forEach(word => {
-    if (word !== "") {
+  arr.forEach((word) => {
+    if (word !== '') {
       if (map.has(word)) {
         map.set(word, map.get(word) + 1);
       } else {
@@ -333,7 +388,7 @@ function getUrlParam(sUrl, sKey) {
     }
   });
   if (sKey) {
-    return result[sKey] || "";
+    return result[sKey] || '';
   } else {
     return result;
   }
@@ -364,27 +419,27 @@ w: 星期，为 ['日', '一', '二', '三', '四', '五', '六'] 中的某一�
 function formatDate(t, str) {
   var obj = {
     yyyy: t.getFullYear(),
-    yy: ("" + t.getFullYear()).slice(-2),
+    yy: ('' + t.getFullYear()).slice(-2),
     M: t.getMonth() + 1,
-    MM: ("0" + (t.getMonth() + 1)).slice(-2),
+    MM: ('0' + (t.getMonth() + 1)).slice(-2),
     d: t.getDate(),
-    dd: ("0" + t.getDate()).slice(-2),
+    dd: ('0' + t.getDate()).slice(-2),
     H: t.getHours(),
-    HH: ("0" + t.getHours()).slice(-2),
+    HH: ('0' + t.getHours()).slice(-2),
     h: t.getHours() % 12,
-    hh: ("0" + (t.getHours() % 12)).slice(-2),
+    hh: ('0' + (t.getHours() % 12)).slice(-2),
     m: t.getMinutes(),
-    mm: ("0" + t.getMinutes()).slice(-2),
+    mm: ('0' + t.getMinutes()).slice(-2),
     s: t.getSeconds(),
-    ss: ("0" + t.getSeconds()).slice(-2),
-    w: ["日", "一", "二", "三", "四", "五", "六"][t.getDay()]
+    ss: ('0' + t.getSeconds()).slice(-2),
+    w: ['日', '一', '二', '三', '四', '五', '六'][t.getDay()],
   };
   return str.replace(/([a-z]+)/gi, function(match) {
     return obj[match];
   });
 }
 //2014-09-05 13:14:20 星期五
-formatDate(new Date(1409894060000), "yyyy-MM-dd HH:mm:ss 星期w");
+formatDate(new Date(1409894060000), 'yyyy-MM-dd HH:mm:ss 星期w');
 ```
 
 ### 获取字符串的长度
@@ -427,11 +482,11 @@ function rgb2hex(sRGB) {
     g,
     b
   ) {
-    if ((r, g, b >= 0 && r, g, b < 256)) return "##" + hex(r) + hex(g) + hex(b);
+    if ((r, g, b >= 0 && r, g, b < 256)) return '##' + hex(r) + hex(g) + hex(b);
   });
 }
 function hex(n) {
-  return n < 16 ? "0" + (+n).toString(16) : (+n).toString(16);
+  return n < 16 ? '0' + (+n).toString(16) : (+n).toString(16);
 }
 ```
 
@@ -439,7 +494,7 @@ function hex(n) {
 
 ```js
 function cssStyle2DomStyle(sName) {
-  let arr = sName.split("-").filter(item => item);
+  let arr = sName.split('-').filter((item) => item);
   if (arr.length < 2) return sName;
   return arr
     .slice(1)
@@ -454,7 +509,7 @@ function cssStyle2DomStyle(sName) {
 
 ```js
 return sName.replace(/\-[a-z]/g, function(a, b) {
-  return b == 0 ? a.replace("-", "") : a.replace("-", "").toUpperCase();
+  return b == 0 ? a.replace('-', '') : a.replace('-', '').toUpperCase();
 });
 ```
 
@@ -464,7 +519,7 @@ return sName.replace(/\-[a-z]/g, function(a, b) {
 
 ```js
 function replaceSpace(str) {
-  return str.split(" ").join("%20");
+  return str.split(' ').join('%20');
   //return encodeURIComponent(str);//会把%解码
   //return str.replace(/\s/g,"%20");
 }
@@ -480,7 +535,7 @@ function replaceSpace(str) {
 var isNumber = function(s) {
   return new RegExp(
     /^\s*[+-]?((\d+(\.\d*)?)|\.\d+)([e][+-]?\d+)?\s*$/,
-    "g"
+    'g'
   ).test(s);
 };
 ```
@@ -493,7 +548,7 @@ var isNumber = function(s) {
 
 ```js
 var firstUniqChar = function(s) {
-  let arr = s.split("");
+  let arr = s.split('');
   let map = {};
   for (let item of arr) {
     if (map[item]) {
@@ -507,7 +562,7 @@ var firstUniqChar = function(s) {
       return key;
     }
   }
-  return " ";
+  return ' ';
 };
 ```
 
@@ -545,7 +600,7 @@ var reverseWords = function(s) {
     .trim()
     .split(/\s+/)
     .reverse()
-    .join(" ");
+    .join(' ');
 };
 ```
 
@@ -557,12 +612,12 @@ var reverseWords = function(s) {
 
 ```js
 var reverseLeftWords = function(s, n) {
-  let arr = s.split("");
+  let arr = s.split('');
   while (n--) {
     arr.push(arr.shift());
   }
   //arr.push(...arr.splice(0, n))
-  return arr.join("");
+  return arr.join('');
 };
 
 var reverseLeftWords = function(s, n) {
@@ -580,7 +635,7 @@ var reverseLeftWords = function(s, k) {
 
 ```js
 var lengthOfLongestSubstring = function(s) {
-  let m = "";
+  let m = '';
   let num = 0;
   let max = 0;
   for (let n of s) {
@@ -612,9 +667,9 @@ var romanToInt = function(s) {
     L: 50,
     C: 100,
     D: 500,
-    M: 1000
+    M: 1000,
   };
-  let arr = s.split("");
+  let arr = s.split('');
   let result = char[arr[0]];
   for (let i = 1; i < arr.length; i++) {
     result +=
@@ -630,7 +685,7 @@ var romanToInt = function(s) {
 
 ```js
 var longestCommonPrefix = function(strs) {
-  if (!strs.length) return "";
+  if (!strs.length) return '';
   let res = strs[0];
   for (let i = 1; i < strs.length; i++) {
     for (let j = 0; j < res.length; j++) {
@@ -654,9 +709,9 @@ var longestCommonPrefix = function(strs) {
 var isValid = function(s) {
   let stack = [];
   let obj = {
-    "(": ")",
-    "[": "]",
-    "{": "}"
+    '(': ')',
+    '[': ']',
+    '{': '}',
   };
   for (let i of s) {
     if (obj[i]) {
@@ -675,7 +730,7 @@ var isValid = function(s) {
 var isValid = function(s) {
   let reg = /\(\)|\[\]|\{\}/g;
   while (s.match(reg)) {
-    s = s.replace(reg, "");
+    s = s.replace(reg, '');
   }
   return s ? false : true;
 };
@@ -709,17 +764,17 @@ var generateParenthesis = function (n) {
 ```js
 var simplifyPath = function(path) {
   const stack = [];
-  const pathArr = path.split("/");
+  const pathArr = path.split('/');
   for (let item of pathArr) {
-    if (item === "" || item === ".") {
+    if (item === '' || item === '.') {
       continue;
-    } else if (item === "..") {
+    } else if (item === '..') {
       stack.pop();
     } else {
       stack.push(item);
     }
   }
-  return "/" + stack.join("/");
+  return '/' + stack.join('/');
 };
 ```
 
@@ -729,8 +784,8 @@ var simplifyPath = function(path) {
 
 ```js
 var numDecodings = function(s) {
-  if (s[0] == "0") return 0;
-  let arr = s.split("");
+  if (s[0] == '0') return 0;
+  let arr = s.split('');
   return decode(arr, arr.length - 1);
 };
 var decode = function(arr, n) {
@@ -740,12 +795,42 @@ var decode = function(arr, n) {
   let res = 0;
   let cur = arr[n];
   let pre = arr[n - 1];
-  if (cur !== "0") {
+  if (cur !== '0') {
     res = decode(arr, n - 1);
   }
-  if (pre == "1" || (pre == "2" && cur <= "6")) {
+  if (pre == '1' || (pre == '2' && cur <= '6')) {
     res += decode(arr, n - 2);
   }
+  return res;
+};
+```
+
+### 字符串相加 lc415
+
+> [padStart](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/padStart)
+
+```js
+var addStrings = function(num1, num2) {
+  let num1Len = num1.length;
+  let num2Len = num2.length;
+  if (num1Len > num2Len) {
+    num2 = num2.padStart(num1Len, '0');
+  } else {
+    num1 = num1.padStart(num2Len, '0');
+  }
+  let res = '';
+  let temp = 0;
+  for (let i = num1.length - 1; i >= 0; i--) {
+    let sum = Number(num1[i]) + Number(num2[i]) + temp;
+    if (sum >= 10) {
+      temp = 1;
+      res = (sum % 10) + res;
+    } else {
+      temp = 0;
+      res = sum + res;
+    }
+  }
+  if (temp) res = '1' + res;
   return res;
 };
 ```
@@ -754,8 +839,8 @@ var decode = function(arr, n) {
 
 ```js
 var compareVersion = function(version1, version2) {
-  let arr1 = version1.split(".");
-  let arr2 = version2.split(".");
+  let arr1 = version1.split('.');
+  let arr2 = version2.split('.');
   let length = Math.max(arr1.length, arr2.length);
   while (arr1.length !== length) {
     arr1.push(0);
@@ -813,7 +898,7 @@ var countCharacters = function(words, chars) {
 
 ```js
 var gcdOfStrings = function(str1, str2) {
-  if (str1 + str2 !== str2 + str1) return "";
+  if (str1 + str2 !== str2 + str1) return '';
   const gcd = (a, b) => (0 === b ? a : gcd(b, a % b));
   return str1.substr(0, gcd(str1.length, str2.length));
 };
@@ -826,9 +911,9 @@ var gcdOfStrings = function(str1, str2) {
 ```js
 var compressString = function(S) {
   let resArr = S.match(/([A-z])\1*/g);
-  let result = "";
+  let result = '';
   if (resArr) {
-    resArr.forEach(item => {
+    resArr.forEach((item) => {
       result += item[0] + item.length;
     });
   }
@@ -859,8 +944,8 @@ let arr = [
   { a: 1 },
   { a: 1 },
   { b: 1 },
-  "1",
-  "1"
+  '1',
+  '1',
 ];
 ```
 
@@ -958,7 +1043,7 @@ Array.prototype.uniq = function() {
 ```js
 function flatten(arr) {
   let res = [];
-  arr.forEach(item => {
+  arr.forEach((item) => {
     if (Array.isArray(item)) {
       res = res.concat(flatten(item));
     } else {
@@ -1079,94 +1164,6 @@ var findNumberIn2DArray = function(matrix, target) {
 };
 ```
 
-### 斐波那契数列 jz10-I
-
-> 递归
-
-```js
-var fib = function(n) {
-  return n < 2 ? n : (fib(n - 1) + fib(n - 2)) % (1e9 + 7);
-};
-```
-
-1. 只是适用于 n 比较小的时候，否则效率低，因为会做很多次重复操作
-2. 而且该例递归属于多分支递归，容易造成栈溢出
-
-> 递归(尾调用优化)
-
-```js
-var fib = function(n, n0 = 0, n1 = 1) {
-  if (n == 0) return n0;
-  if (n == 1) return n1;
-  return fib(n - 1, n1, (n0 + n1) % (1e9 + 7));
-};
-```
-
-不会发生栈溢出
-
-> 非递归
-
-```js
-var fib = function(n) {
-  if (n < 2) {
-    return n;
-  }
-  let ac1 = 1,
-    ac2 = 1;
-  for (let i = 2; i < n; i++) {
-    //解构赋值，代码更简洁
-    [ac1, ac2] = [ac2, (ac1 + ac2) % (1e9 + 7)];
-  }
-  return ac2;
-};
-```
-
-### 跳台阶 jz10-II
-
-递归：
-
-```js
-var numWays = function(n) {
-  if (n < 2) return 1;
-  return numWays(n - 1) + numWays(n - 2);
-};
-```
-
-非递归：
-
-```js
-var numWays = function(n) {
-  let arr = [1, 1];
-  for (let i = 2; i <= n; i++) {
-    arr[i] = arr[i - 1] + arr[i - 2];
-  }
-  return arr[n];
-};
-```
-
-#### 变态跳台阶
-
-跳台阶的问题是一个动态规划的问题，由于一次只能够跳 1 级或者 2 级，因此跳上 n 级台阶一共有两种方案，一种是从 n-1 跳上，一
-种是从 n-2 级跳上，因此 f(n) = f(n-1) + f(n-2)。
-
-和斐波那契数列类似，不过初始两项的值变为了 1 和 2，后面每项的值等于前面两项的和。
-
-变态跳台阶的问题同上一个问题的思考方案是一样的，我们可以得到一个结论是，每一项的值都等于前面所有项的值的和。
-
-f(1) = 1
-f(2) = f(2-1) + f(2-2) //f(2-2) 表示 2 阶一次跳 2 阶的次数。
-f(3) = f(3-1) + f(3-2) + f(3-3)
-...
-f(n) = f(n-1) + f(n-2) + f(n-3) + ... + f(n-(n-1)) + f(n-n)
-
-再次总结可得
-
-```
-                 | 1       ,(n=0 )
-   f(n) =        | 1       ,(n=1 )
-                 | 2*f(n-1),(n>=2)
-```
-
 ### 旋转数组的最小数字 jz11
 
 > min()
@@ -1224,7 +1221,7 @@ var movingCount = function(m, n, k) {
     [-1, 0],
     [1, 0],
     [0, -1],
-    [0, 1]
+    [0, 1],
   ];
   const visited = {};
   dfs(0, 0);
@@ -1259,11 +1256,11 @@ var movingCount = function(m, n, k) {
   let res = 0;
   const directions = [
     [1, 0],
-    [0, 1]
+    [0, 1],
   ];
   const queue = [[0, 0]];
   const visited = {
-    "0-0": true
+    '0-0': true,
   }; // 标记 (x,y) 是否被访问过
   while (queue.length) {
     const [x, y] = queue.shift();
@@ -1345,7 +1342,7 @@ var cuttingRope = function(n) {
 var exchange = function(nums) {
   const odd = [];
   const even = [];
-  nums.forEach(item => {
+  nums.forEach((item) => {
     item % 2 ? odd.push(item) : even.push(item);
   });
   return odd.concat(even);
@@ -1440,7 +1437,7 @@ var deserialize = function(data) {
     return null;
   }
   var number = arr.shift();
-  if (typeof number == "number") {
+  if (typeof number == 'number') {
     node = new TreeNode(number);
     node.left = deserialize(arr);
     node.right = deserialize(arr);
@@ -1720,7 +1717,7 @@ var twoSum = function(n) {
   }
   return res
     .slice(1)
-    .map(num => num / Math.pow(6, n))
+    .map((num) => num / Math.pow(6, n))
     .filter(Boolean);
 };
 ```
@@ -1742,7 +1739,7 @@ var twoSum = function(n) {
     return cnts;
   }
   return diceCnt(n)
-    .map(num => num / Math.pow(6, n))
+    .map((num) => num / Math.pow(6, n))
     .filter(Boolean);
 };
 ```
@@ -1967,7 +1964,7 @@ var binarySearch = function(nums, target, start, end) {
 var searchRange = function(nums, target) {
   return [
     searchLB(nums, target, 0, nums.length - 1),
-    searchHB(nums, target, 0, nums.length - 1)
+    searchHB(nums, target, 0, nums.length - 1),
   ];
 };
 
@@ -2179,18 +2176,16 @@ var isAnagram = function(s, t) {
 ```js
 var lengthOfLIS = function(nums) {
   let len = nums.length;
-  if (len == 0) return 0;
+  if (!len) return 0;
   let dp = new Array(len).fill(1);
-  let max = 0;
   for (let i = 0; i < len; i++) {
     for (let j = 0; j < i; j++) {
-      if (nums[j] < nums[i]) {
-        dp[i] = Math.max(dp[i], dp[j] + 1);
+      if (nums[i] > nums[j] && dp[j] + 1 > dp[i]) {
+        dp[i] = dp[j] + 1;
       }
     }
-    max = Math.max(dp[i], max);
   }
-  return max;
+  return Math.max.apply(null, dp);
 };
 ```
 
@@ -2284,7 +2279,7 @@ var minimumLengthEncoding = function(words) {
     }
   }
   let result = 0;
-  hashSet.forEach(item => (result += item.length + 1));
+  hashSet.forEach((item) => (result += item.length + 1));
   return result;
 };
 ```
@@ -2323,7 +2318,7 @@ var hasGroupsSizeX = function(deck) {
   }
   let arr = [...map.values()];
   let res = arr[0];
-  return arr.every(i => (res = gcd(res, i)) > 1);
+  return arr.every((i) => (res = gcd(res, i)) > 1);
 };
 let gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
 ```
@@ -2379,7 +2374,7 @@ var numRookCaptures = function(board) {
   let rx, ry;
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
-      if (board[i][j] === "R") {
+      if (board[i][j] === 'R') {
         rx = i;
         ry = j;
       }
@@ -2394,10 +2389,10 @@ var numRookCaptures = function(board) {
     while (true) {
       x += dx[k];
       y += dy[k];
-      if (x < 0 || x >= 8 || y < 0 || y >= 8 || board[x][y] === "B") {
+      if (x < 0 || x >= 8 || y < 0 || y >= 8 || board[x][y] === 'B') {
         break;
       }
-      if (board[x][y] === "p") {
+      if (board[x][y] === 'p') {
         res++;
         break;
       }
@@ -2418,7 +2413,7 @@ var rotate = function(matrix) {
       [matrix[i][j], matrix[j][i]] = [matrix[j][i], matrix[i][j]];
     }
   }
-  matrix.forEach(row => row.reverse());
+  matrix.forEach((row) => row.reverse());
 };
 ```
 
@@ -3317,6 +3312,217 @@ var insertIntoBST = function(root, val) {
 };
 ```
 
+## **动态规划**
+
+### 斐波那契数列 jz10-I
+
+> 递归
+
+```js
+var fib = function(n) {
+  return n < 2 ? n : (fib(n - 1) + fib(n - 2)) % (1e9 + 7);
+};
+```
+
+1. 只是适用于 n 比较小的时候，否则效率低，因为会做很多次重复操作
+2. 而且该例递归属于多分支递归，容易造成栈溢出
+
+> 递归(尾调用优化)
+
+```js
+var fib = function(n, n0 = 0, n1 = 1) {
+  if (n == 0) return n0;
+  if (n == 1) return n1;
+  return fib(n - 1, n1, (n0 + n1) % (1e9 + 7));
+};
+```
+
+不会发生栈溢出
+
+> 非递归
+
+```js
+var fib = function(n) {
+  if (n < 2) {
+    return n;
+  }
+  let ac1 = 1,
+    ac2 = 1;
+  for (let i = 2; i < n; i++) {
+    //解构赋值，代码更简洁
+    [ac1, ac2] = [ac2, (ac1 + ac2) % (1e9 + 7)];
+  }
+  return ac2;
+};
+```
+
+### 青蛙跳台阶问题 jz10-II
+
+> 递归
+
+```js
+var numWays = function(n) {
+  if (n < 2) return 1;
+  return numWays(n - 1) + numWays(n - 2);
+};
+```
+
+> 记忆化递归
+
+```js
+var numWays = function(n) {
+  let arr = [1, 1];
+  for (let i = 2; i <= n; i++) {
+    arr[i] = arr[i - 1] + arr[i - 2];
+  }
+  return arr[n];
+};
+```
+
+> 动态规划
+
+```js
+var numWays = function(n) {
+  let a = 1,
+    b = 1,
+    sum;
+  while (n--) {
+    sum = a + b;
+    a = b;
+    b = sum;
+  }
+  return a;
+};
+```
+
+#### 变态跳台阶
+
+跳台阶的问题是一个动态规划的问题，由于一次只能够跳 1 级或者 2 级，因此跳上 n 级台阶一共有两种方案，一种是从 n-1 跳上，一
+种是从 n-2 级跳上，因此 f(n) = f(n-1) + f(n-2)。
+
+和斐波那契数列类似，不过初始两项的值变为了 1 和 2，后面每项的值等于前面两项的和。
+
+变态跳台阶的问题同上一个问题的思考方案是一样的，我们可以得到一个结论是，每一项的值都等于前面所有项的值的和。
+
+f(1) = 1
+f(2) = f(2-1) + f(2-2) //f(2-2) 表示 2 阶一次跳 2 阶的次数。
+f(3) = f(3-1) + f(3-2) + f(3-3)
+...
+f(n) = f(n-1) + f(n-2) + f(n-3) + ... + f(n-(n-1)) + f(n-n)
+
+再次总结可得
+
+```
+                 | 1       ,(n=0 )
+   f(n) =        | 1       ,(n=1 )
+                 | 2*f(n-1),(n>=2)
+```
+
+### 最小路径和 lc64
+
+> 暴力递归
+
+```js
+var minPathSum = function(grid) {
+  let x = grid.length - 1;
+  let y = grid[0].length - 1;
+  return calc(grid, x, y);
+};
+var calc = function(grid, i, j) {
+  if (i == 0 && j == 0) return grid[0][0];
+  if (i == 0) return grid[i][j] + calc(grid, 0, j - 1);
+  if (j == 0) return grid[i][j] + calc(grid, i - 1, 0);
+  return grid[i][j] + Math.min(calc(grid, i - 1, j), calc(grid, i, j - 1));
+};
+```
+
+> 二维 dp
+
+```js
+var minPathSum = function(grid) {
+  let x = grid.length;
+  let y = grid[0].length;
+  let dp = Array.from(new Array(x), () => new Array(y));
+  for (let i = 0; i < x; i++) {
+    for (let j = 0; j < y; j++) {
+      if (i != 0 && j !== 0) {
+        dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + grid[i][j];
+      } else if (i != 0 && j == 0) {
+        dp[i][j] = dp[i - 1][j] + grid[i][j];
+      } else if (i == 0 && j != 0) {
+        dp[i][j] = dp[i][j - 1] + grid[i][j];
+      } else {
+        dp[i][j] = grid[i][j];
+      }
+    }
+  }
+  return dp[x - 1][y - 1];
+};
+```
+
+> 一维 dp
+
+```js
+var minPathSum = function(grid) {
+  var dp = new Array(grid[0].length);
+  for (var i = 0; i < grid.length; i++) {
+    for (var j = 0; j < grid[0].length; j++) {
+      if (i != 0 && j != 0) {
+        dp[j] = Math.min(dp[j - 1], dp[j]) + grid[i][j];
+      } else if (i == 0 && j != 0) {
+        dp[j] = dp[j - 1] + grid[i][j];
+      } else if (i != 0 && j == 0) {
+        dp[j] = dp[j] + grid[i][j];
+      } else if (i == 0 && j == 0) {
+        dp[j] = grid[i][j];
+      }
+    }
+  }
+  return dp[grid[0].length - 1];
+};
+```
+
+> O(1)dp
+
+```js
+var minPathSum = function(grid) {
+  let x = grid.length;
+  let y = grid[0].length;
+  for (let i = 0; i < x; i++) {
+    for (let j = 0; j < y; j++) {
+      if (i != 0 && j !== 0) {
+        grid[i][j] = Math.min(grid[i - 1][j], grid[i][j - 1]) + grid[i][j];
+      } else if (i != 0 && j == 0) {
+        grid[i][j] = grid[i - 1][j] + grid[i][j];
+      } else if (i == 0 && j != 0) {
+        grid[i][j] = grid[i][j - 1] + grid[i][j];
+      }
+    }
+  }
+  return grid[x - 1][y - 1];
+};
+```
+
+### 最长公共子序列 lc1143
+
+```js
+var longestCommonSubsequence = function(text1, text2) {
+  let n = text1.length;
+  let m = text2.length;
+  let dp = Array.from(new Array(n + 1), () => new Array(m + 1).fill(0));
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      if (text1[i - 1] == text2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i][j - 1], dp[i - 1][j]);
+      }
+    }
+  }
+  return dp[n][m];
+};
+```
+
 ## **排序**
 
 [十大经典排序算法（动图演示）](https://www.cnblogs.com/onepixel/p/7674659.html)
@@ -3559,3 +3765,7 @@ function heapify(array, index, size) {
 #### 判断数组中是否有重复值。必须保证额外空间复杂度为 O(1)
 
 非递归实现堆排序
+
+### 乱序
+
+[数组乱序](https://juejin.im/post/5d004ad95188257c6b518056)

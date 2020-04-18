@@ -1,77 +1,16 @@
-## **JavaScript**
+---
+title: JavaScript
+---
 
-## 基础知识
+## **基础知识**
 
 ### js 浮点类型的精确计算
 
 [为什么 0.1+0.2 不等于 0.3](https://segmentfault.com/a/1190000012175422)
 
-```js
-//加法
-Number.prototype.add = function(arg) {
-  var r1, r2, m;
-  try {
-    r1 = this.toString().split(".")[1].length;
-  } catch (e) {
-    r1 = 0;
-  }
-  try {
-    r2 = arg.toString().split(".")[1].length;
-  } catch (e) {
-    r2 = 0;
-  }
-  m = Math.pow(10, Math.max(r1, r2));
-  return (this * m + arg * m) / m;
-};
-//减法
+0.1 和 0.2 在转换成二进制后会无限循环，由于标准位数的限制后面多余的位数会被截掉，此时就已经出现了精度的损失，相加后因浮点数小数位的限制而截断的二进制数字在转换为十进制就会变成 0.30000000000000004
 
-Number.prototype.sub = function(arg) {
-  return this.add(-arg);
-};
-
-//乘法
-
-Number.prototype.mul = function(arg) {
-  var m = 0,
-    s1 = this.toString(),
-    s2 = arg.toString();
-
-  try {
-    m += s1.split(".")[1].length;
-  } catch (e) {}
-
-  try {
-    m += s2.split(".")[1].length;
-  } catch (e) {}
-
-  return (
-    (Number(s1.replace(".", "")) * Number(s2.replace(".", ""))) /
-    Math.pow(10, m)
-  );
-};
-
-//除法
-
-Number.prototype.div = function(arg) {
-  var t1 = 0,
-    t2 = 0,
-    r1,
-    r2;
-  try {
-    t1 = this.toString().split(".")[1].length;
-  } catch (e) {}
-  try {
-    t2 = arg.toString().split(".")[1].length;
-  } catch (e) {}
-  with (Math) {
-    r1 = Number(this.toString().replace(".", ""));
-    r2 = Number(arg.toString().replace(".", ""));
-    return (r1 / r2) * pow(10, t2 - t1);
-  }
-};
-```
-
-### js 中整数的安全范围是多少？
+### js 中整数的安全范围
 
 安全整数指的是，在这个范围内的整数转化为二进制存储的时候不会出现精度丢失，能够被“安全”呈现的最大整数是 2^53 - 1，
 即 9007199254740991，在 ES6 中被定义为 Number.MAX_SAFE_INTEGER。最小整数是-9007199254740991，在 ES6 中
@@ -83,29 +22,74 @@ Number.prototype.div = function(arg) {
 
 ### 严格模式
 
+目的：
+
+1. 消除 js 语法中不合理，不严谨的地方
+2. 保证安全性
+3. 为未来的 js 版本做铺垫
+
 [严格模式的限制](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Strict_mode/Transitioning_to_strict_mode)
 
-- 不能删除不可删除的属性，否则报错
-- 不能对只读属性赋值，否则报错
-- 禁止 this 指向全局对象
-- 不能使用前缀 0 表示八进制数，否则报错
-- 不能使用 with 语句
-- 变量必须声明后再使用
-- 函数的参数不能有同名属性，否则报错
-- 不能删除变量 delete prop，会报错，只能删除属性 delete global[prop]
-- eval 不会在它的外层作用域引入变量
-- eval 和 arguments 不能被重新赋值
-- arguments 不会自动反映函数参数的变化
-- 不能使用 arguments.callee
-- 不能使用 arguments.caller
-- 不能使用 fn.caller 和 fn.arguments 获取函数调用的堆栈
-- 增加了保留字（比如 protected、static 和 interface）
+- 全局变量显式声明
+
+在正常模式中，如果一个变量没有声明就赋值，默认是全局变量。严格模式禁止这种用法，全局变量必须显式声明。
+
+- 禁止 this 关键字指向全局对象：
+
+```js
+var foo = function() {
+  console.log(this);
+};
+
+foo();
+```
+
+上方代码中，普通模式打印的是 window。严格模式下打印的是 undefined。
+
+- 构造函数必须通过 new 实例化对象
+
+构造函数必须通过 new 实例化对象，否则报错。因为 this 为 undefined，此时无法设置属性。
+
+```js
+var Cat = function(name) {
+  this.name = name;
+};
+
+Cat('haha');
+```
+
+上方代码中，如果在严格模式下，则会报错。
+
+- 属性相关
+
+普通模式下，如果对象有多个重名属性，最后赋值的那个属性会覆盖前面的值。严格模式下，这属于语法错误。
+
+普通模式下，如果函数有多个重名的参数，可以用 arguments[i]读取。严格模式下，多个重名的参数属于语法错误。
+
+比如下面这样的代码：
+
+```js
+    var obj = {
+    	username: 'smyh';
+    	username: 'vae'
+    }
+```
+
+上面的代码，在严格模式下属于语法错误，因为有重名的属性。
+
+- 函数必须声明在顶层
+
+将来 Javascript 的新版本会引入"块级作用域"。为了与新版本接轨，严格模式只允许在全局作用域或函数作用域的顶层声明函数。也就是说，不允许在非函数的代码块内声明函数。
+
+- 新增关键字
+
+为了向将来 Javascript 的新版本过渡，严格模式新增了一些保留字：implements, interface, let, package, private, protected, public, static, yield。
 
 ## **数据类型**
 
 ### JS 变量类型
 
-JS 中有 6 种原始值，分别是：
+JS 中有 7 种原始值，分别是：
 
 1. `boolean`
 2. `number`
@@ -113,6 +97,7 @@ JS 中有 6 种原始值，分别是：
 4. `undefined`
 5. `symbol`[理解和使用 ES6 中的 Symbol](https://www.jianshu.com/p/f40a77bbd74e)
 6. `null`
+7. `bigInt`
 
 引用类型：
 
@@ -120,44 +105,106 @@ JS 中有 6 种原始值，分别是：
 2. 数组 `Array`
 3. 函数 `Function`
 
-两种类型间的主要区别是它们的存储位置不同，基本数据类型的值直接保存在栈中，而复杂数据类型的值保存在堆中，通过使用在栈中
-保存对应的指针来获取堆中的值。
+两种类型间的主要区别是它们的存储位置不同，基本数据类型的值直接保存在栈中，而引用数据类型的值保存在堆中，通过使用在栈中
+保存对应的指针来获取堆中的值
+
+虽然 typeof null 会输出 object，但是这只是 JS 存在的一个悠久 Bug。在 JS 的最初版本中使用的是 32 位系统，为了性能考虑使用低位存储变量的类型信息，000 开头代表是对象然而 null 表示为全零，所以将它错误的判断为 object
+
+#### 基本包装类型
+
+```js
+'1'.toString();
+
+var s = new Object('1');
+s.toString();
+s = null;
+```
+
+第一步: 创建 Object 类实例。注意不是 String。由于 Symbol 和 BigInt 的出现，对它们调用 new 都会报错，目前 ES6 规范也不建议用 new 来创建基本类型的包装类
+第二步: 调用实例方法
+第三步: 执行完方法立即销毁这个实例
+
+整个过程体现了基本包装类型的性质，而基本包装类型恰恰属于基本数据类型，包括 Boolean, Number 和 String。
+
+#### BigInt
+
+BigInt 是一种新的数据类型，用于当整数值大于 Number 数据类型支持的范围时。这种数据类型允许我们安全地对大整数执行算术操作，表示高分辨率的时间戳，使用大整数 id，等等，而不需要使用库。
+
+在 JS 中，所有的数字都以双精度 64 位浮点格式表示,这导致 JS 中的 Number 无法精确表示非常大的整数，它会将非常大的整数四舍五入，确切地说，JS 中的 Number 类型只能安全地表示-9007199254740991(-(2^53-1))和 9007199254740991（(2^53-1)），任何超出此范围的整数值都可能失去精度。
+
+```js
+console.log(999999999999999); //=>10000000000000000
+```
+
+复制代码同时也会有一定的安全性问题:
+
+```js
+9007199254740992 === 9007199254740993; // → true
+```
+
+创建 BigInt
+
+```js
+console.log(9007199254740995n); // → 9007199254740995n
+console.log(9007199254740995); // → 9007199254740996
+BigInt('9007199254740995'); // → 9007199254740995n
+```
+
+简单使用
+
+```js
+10n + 20n; // → 30n
+10n - 20n; // → -10n
++10n; // → TypeError: Cannot convert a BigInt value to a number
+-10n; // → -10n
+10n \* 20n; // → 200n
+20n / 10n; // → 2n
+23n % 10n; // → 3n
+10n \*\* 3n; // → 1000n
+
+const x = 10n;
+++x; // → 11n
+--x; // → 9n
+console.log(typeof x); //"bigint"
+```
+
+复制代码值得警惕的点
+
+BigInt 不支持一元加号运算符, 这可能是某些程序可能依赖于 + 始终生成 Number 的不变量，或者抛出异常。另外，更改 + 的行为也会破坏 asm.js 代码。
+
+因为隐式类型转换可能丢失信息，所以不允许在 bigint 和 Number 之间进行混合操作。当混合使用大整数和浮点数时，结果值可能无法由 BigInt 或 Number 精确表示。
+
+```js
+10 + 10n; // → TypeError
+```
+
+复制代码
+不能将 BigInt 传递给 Web api 和内置的 JS 函数，这些函数需要一个 Number 类型的数字。尝试这样做会报 TypeError 错误。
+
+```js
+Math.max(2n, 4n, 6n); // → TypeError
+```
+
+当 Boolean 类型与 BigInt 类型相遇时，BigInt 的处理方式与 Number 类似，换句话说，只要不是 0n，BigInt 就被视为 truthy 的值。
+
+```js
+if (0n) {
+  //条件判断为 false
+}
+if (3n) {
+  //条件为 true
+}
+```
+
+元素都为 BigInt 的数组可以进行 sort
+
+BigInt 可以正常地进行位运算，如|、&、<<、>>和^
 
 #### instanceof
 
-#### 实现类型判断函数
+核心: 原型链的向上查找
 
-1. 判断 null
-2. 判断基础类型
-3. 使用`Object.prototype.toString.call(target)`来判断**引用类型**
-
-注意： 一定是使用`call`来调用，不然是判断的 Object.prototype 的类型
-之所以要先判断是否为基本类型是因为：虽然`Object.prototype.toString.call()`能判断出某值是：number/string/boolean，但是其实在包装的时候是把他们先转成了对象然后再判断类型的。 但是 JS 中包装类型和原始类型还是有差别的，因为对一个包装类型来说，typeof 的值是 object
-
-```js
-function getType(target) {
-  //先处理最特殊的Null
-  if (target === null) {
-    return "null";
-  }
-  //判断是不是基础类型
-  const typeOfT = typeof target;
-  if (typeOfT !== "object") {
-    return typeOfT;
-  }
-  //肯定是引用类型了
-  const template = {
-    "[object Object]": "object",
-    "[object Array]": "array",
-    // 一些包装类型
-    "[object String]": "object - string",
-    "[object Number]": "object - number",
-    "[object Boolean]": "object - boolean"
-  };
-  const typeStr = Object.prototype.toString.call(target);
-  return template[typeStr];
-}
-```
+[instanceof 判断基本数据类型:hasInstance](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Symbol/hasInstance)
 
 #### 判断 Array
 
@@ -212,11 +259,11 @@ function getType(target) {
 
 #### ToPrimitive
 
-对象在转换类型的时候，会调用内置的 [[ToPrimitive]] 函数，对于该函数来说，算法逻辑一般来说如下：
+对象在转换类型的时候，会调用内置的 [[ToPrimitive]] 函数
 
-1. 如果已经是原始类型了，那就不需要转换了
-2. 如果需要转字符串类型就调用 x.toString()，转换为基础类型的话就返回转换的值。不是字符串类型的话就先调用 valueOf，结果不是基础类型的话再调用 toString
-3. 调用 x.valueOf()，如果转换为基础类型，就返回转换的值
+1. 如果 Symbol.toPrimitive()方法，优先调用再返回
+2. 调用 valueOf()，如果转换为原始类型，则返回
+3. 调用 toString()，如果转换为原始类型，则返回
 4. 如果都没有返回原始类型，就会报错 TypeError
 
 #### ==和===
@@ -239,6 +286,32 @@ function getType(target) {
 对于 NaN，判断的方法是使用全局函数 `isNaN()`
 
 [(a==1&&a==2&&a==3)的实现和原理](https://blog.csdn.net/weixin_39856066/article/details/95483680)
+
+#### [] == ![]
+
+== 中，左右两边都需要转换为数字然后进行比较。
+[]转换为数字为 0。
+![] 首先是转换为布尔值，由于[]作为一个引用类型转换为布尔值为 true,
+因此![]为 false，进而在转换成数字，变为 0。
+0 == 0 ， 结果为 true
+
+#### Object.is ===
+
+[Object.is()](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/is) 在严格等于的基础上修复了一些特殊情况下的失误，具体来说就是+0 和-0，NaN 和 NaN。
+
+```js
+
+function is(x, y) {
+  if (x === y) {
+    //运行到1/x === 1/y的时候x和y都为0，但是1/+0 = +Infinity， 1/-0 = -Infinity, 是不一样的
+    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+  } else {
+    //NaN===NaN是false,这是不对的，我们在这里做一个拦截，x !== x，那么一定是 NaN, y 同理
+    //两个都是NaN的时候返回true
+    return x !== x && y !== y;
+  }
+
+```
 
 ## **引用类型**
 
@@ -299,8 +372,8 @@ Array.from(arrayLike)
 
 ```js
 var str =
-  "Visit W3School, W3School is a place to study web technology.W3School";
-var patt = new RegExp("W3School", "g");
+  'Visit W3School, W3School is a place to study web technology.W3School';
+var patt = new RegExp('W3School', 'g');
 var result;
 
 while ((result = patt.exec(str)) != null) {
@@ -408,20 +481,19 @@ while ((result = patt.exec(str)) != null) {
 
 ### 作用域链
 
-一般情况下变量取值回到创建这个变量函数的作用域中取值，但是如果当前作用域中没有查到值，就会向上级作用域去查，知道查到全局作用域，这么一个查找过程形成的链条就叫作用域链
+一般情况下变量取值回到创建这个变量函数的作用域中取值，但是如果当前作用域中没有查到值，就会向上级作用域去查，直到查到全局作用域，这个查找过程形成的链条就叫作用域链
 
 ### 闭包
 
-闭包是指有权访问另一个函数作用域中变量的函数，创建闭包的最常见的方式就是在一个函数内创建另一个函数，创建的函数可以
-访问到当前函数的局部变量
+闭包是指有权访问另一个函数作用域中变量的函数
+
+创建闭包的最常见的方式就是在一个函数内创建另一个函数，创建的函数可以访问到当前函数的局部变量
 
 用途
 
-1. 使函数外部能够访问到函数内部的变量。通过使用闭包，我们可以通过在外部调用闭包函数，从而在外
-   部访问到函数内部的变量，可以使用这种方法来创建私有变量
+1. 使函数外部能够访问到函数内部的变量。通过使用闭包，我们可以通过在外部调用闭包函数，从而在外部访问到函数内部的变量，可以使用这种方法来创建私有变量
 
-2. 使已经运行结束的函数上下文中的变量对象继续留在内存中，因为闭包函数保留了这个变量对象的引用，所以
-   这个变量对象不会被回收
+2. 使已经运行结束的函数上下文中的变量对象继续留在内存中，因为闭包函数保留了这个变量对象的引用，所以这个变量对象不会被回收
 
 [什么是闭包？闭包的作用，用法及优缺点](https://www.cnblogs.com/amcy/p/9912528.html##_label0)
 
@@ -553,7 +625,7 @@ IIFE（ 立即调用函数表达式）是一个在定义时就会立即执行的
 
 ```js
 (function() {
-  var name = "Barry";
+  var name = 'Barry';
 })();
 // 无法从外部访问变量 name
 name; // 抛出错误："Uncaught ReferenceError: name is not defined"
@@ -563,7 +635,7 @@ name; // 抛出错误："Uncaught ReferenceError: name is not defined"
 
 ```js
 var result = (function() {
-  var name = "Barry";
+  var name = 'Barry';
   return name;
 })();
 // IIFE 执行后返回的结果：
@@ -639,7 +711,7 @@ let a = {
   },
   c: () => {
     console.log(this);
-  }
+  },
 };
 a.b(); // a
 a.c(); // window
@@ -652,13 +724,13 @@ d(); // window
 ```js
 var name1 = 1;
 function test() {
-  let name1 = "kin";
+  let name1 = 'kin';
   let a = {
-    name1: "jack",
+    name1: 'jack',
     fn: () => {
-      var name1 = "black";
+      var name1 = 'black';
       console.log(this.name1);
-    }
+    },
   };
   return a;
 }
@@ -716,20 +788,20 @@ delete person.name //无效，严格模式下会报错
 ```js
 var person = {
   _age: 20, //下划线写法表示只能通过对象方法访问的属性
-  state: "young"
+  state: 'young',
 };
-Object.defineProperty(person, "age", {
+Object.defineProperty(person, 'age', {
   get: function() {
     return this._age;
   },
   set: function(newVal) {
     if (newVal > 50) {
       this._age = newVal;
-      this.state = "old";
+      this.state = 'old';
     } else {
       this._age = newVal;
     }
-  }
+  },
 });
 ```
 
@@ -743,10 +815,10 @@ Object.defineProperty(person, "age", {
 var person = {};
 Object.defineProperties(person, {
   _age: {
-    value: 20
+    value: 20,
   },
   state: {
-    value: "young"
+    value: 'young',
   },
   age: {
     get: function() {
@@ -755,19 +827,19 @@ Object.defineProperties(person, {
     set: function(newVal) {
       if (newVal > 50) {
         this._age = newVal;
-        this.state = "old";
+        this.state = 'old';
       } else {
         this._age = newVal;
       }
-    }
-  }
+    },
+  },
 });
 
-var descriptor = Object.getOwnPropertyDescriptor(person, "_age");
+var descriptor = Object.getOwnPropertyDescriptor(person, '_age');
 descriptor.value; //20
 descriptor.configurable; //false
 
-var descriptor = Object.getOwnPropertyDescriptor(person, "age");
+var descriptor = Object.getOwnPropertyDescriptor(person, 'age');
 descriptor.value; //undefined
 descriptor.configurable; //false
 typeof descriptor; //function
@@ -798,7 +870,7 @@ Reflect.ownKeys({ [Symbol()]: 0, b: 0, 10: 0, 2: 0, a: 0 });
 
 ```js
 //1
-JSON.stringify(obj) == "{}";
+JSON.stringify(obj) == '{}';
 //2
 var b = function(obj) {
   for (let key in obj) {
@@ -1081,11 +1153,11 @@ Screen 对象包含有关客户端显示屏幕的信息。 每个 Window 对象�
 ```
 
 ```js
-const div1 = document.getElementById("div1");
-document.addEventListener(div1, "click", e => {
+const div1 = document.getElementById('div1');
+document.addEventListener(div1, 'click', (e) => {
   e.preventDefault(); //防止跳转
   const target = e.target;
-  if (target.nodeName === "A") {
+  if (target.nodeName === 'A') {
     alert(target.innerHTML);
   }
 });
@@ -1170,7 +1242,7 @@ JavaScript 是使用构造函数来新建一个对象的，每一个构造函数
 
 ```js
 function myInstanceof(a, b) {
-  if (typeof a !== "object" || a === null) return false;
+  if (typeof a !== 'object' || a === null) return false;
   let proto = Object.getPrototypeOf(a);
   while (true) {
     if (proto === null) return false;
@@ -1207,8 +1279,8 @@ Object.create() = function(obj) {
 ### 求输出结果：
 
 ```js
-Object.prototype.a = "Object";
-Function.prototype.a = "Function";
+Object.prototype.a = 'Object';
+Function.prototype.a = 'Function';
 function Person() {}
 var child = new Person();
 
@@ -1409,13 +1481,13 @@ b.y; //200
 function ajax(url) {
   const p = new Promise((resolve, reject) => {
     let xhr = new XMLHttpRequester();
-    xhr.open("GET", url, true);
+    xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
           resolve(xhr.responseText);
         } else if (xhr.status === 404) {
-          reject(new Error("404 Not Found"));
+          reject(new Error('404 Not Found'));
         }
       }
     };
@@ -1424,12 +1496,12 @@ function ajax(url) {
   return p;
 }
 
-const url = "/";
+const url = '/';
 ajax(url)
-  .then(res => {
+  .then((res) => {
     console.log(res);
   })
-  .catch(err => {
+  .catch((err) => {
     console.error(err);
   });
 ```
@@ -1454,7 +1526,7 @@ xhr.withCredentials = true;
 
 // Fetch
 fetch(url, {
-  credentials: "include"
+  credentials: 'include',
 });
 ```
 
@@ -1475,7 +1547,7 @@ let controller = new AbortController();
 let signal = controller.signal;
 
 fetch(url, {
-  signal
+  signal,
 });
 
 controller.abort();
@@ -1629,19 +1701,7 @@ for..of 适用遍历数/数组对象/字符串/map/set 等拥有迭代器对象�
 
 ### Promise
 
-[要就来 45 道 Promise 面试题一次爽到底(1.1w 字用心整理)](https://juejin.im/post/5e58c618e51d4526ed66b5cf)
-
-[BAT 前端经典面试问题：史上最最最详细的手写 Promise 教程](https://juejin.im/post/5b2f02cd5188252b937548ab##heading-0)
-
-Promise 对象是异步编程的一种解决方案，克服了回调地狱的问题
-
-Promises/A+ 规范是 JavaScript Promise 的标准，规定了一个 Promise 所必须具有的特性。
-
-Promise 是一个构造函数，接收一个函数作为参数，返回一个 Promise 实例。一个 Promise 实例有三种状态，分别是 pendi
-ng、resolved 和 rejected，分别代表了进行中、已成功和已失败。实例的状态只能由 pending 转变 resolved 或者 reje
-cted 状态，并且状态一经改变，就无法再被改变了。状态的改变是通过 resolve() 和 reject() 函数来实现的，我们
-可以在异步操作结束后调用这两个函数改变 Promise 实例的状态，它的原型上定义了一个 then 方法，使用这个 then 方法可以
-为两个状态的改变注册回调函数。这个回调函数属于微任务，会在本轮事件循环的末尾执行。
+[Promises/A+规范](https://www.ituring.com.cn/article/66566)
 
 ### async 和 await
 
@@ -1649,7 +1709,7 @@ cted 状态，并且状态一经改变，就无法再被改变了。状态的改
 
 ```js
 async function test() {
-  return "1";
+  return '1';
 }
 console.log(test());
 // -> Promise {<resolved>: "1"}
@@ -1683,11 +1743,11 @@ async function test() {
 let a = 0;
 let b = async () => {
   a = a + (await 10);
-  console.log("2", a);
+  console.log('2', a);
 };
 b();
 a++;
-console.log("1", a);
+console.log('1', a);
 
 //先输出  ‘1’, 1
 //在输出  ‘2’, 10
@@ -1758,8 +1818,8 @@ function bar(baz) {
 还有一种方法是利用**Symbol 值的唯一性**，将私有方法的名字命名为一个 Symbol 值。
 
 ```js
-const bar = Symbol("bar");
-const snaf = Symbol("snaf");
+const bar = Symbol('bar');
+const snaf = Symbol('snaf');
 
 export default class myClass {
   // 公有方法
@@ -1789,7 +1849,7 @@ Reflect.ownKeys(myClass.prototype);
 
 ```js
 function wait() {
-  return new Promise(resolve => setTimeout(resolve, 1000));
+  return new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
 async function main() {
@@ -1812,7 +1872,7 @@ main();
 
 ```js
 function wait() {
-  return new Promise(resolve => setTimeout(resolve, 1000));
+  return new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
 async function main() {
@@ -2001,7 +2061,7 @@ class events {
   // 发布事件，触发观察者回调事件
   publish(type, ...args) {
     if (this.topics.hasOwnProperty(type)) {
-      this.topics[type].forEach(fn => fn(...args));
+      this.topics[type].forEach((fn) => fn(...args));
     }
   }
   // 移除主题的一个观察者的回调事件

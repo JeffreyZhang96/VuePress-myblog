@@ -1,3 +1,6 @@
+---
+title: 数据库
+---
 
 [简述关系型数据库和非关系型数据库](https://www.jianshu.com/p/fd7b422d5f93)
 

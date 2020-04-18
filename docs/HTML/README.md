@@ -1,4 +1,6 @@
-## **HTML**
+---
+title: HTML
+---
 
 ## **基础知识**
 
@@ -170,7 +172,7 @@ label 标签来定义表单控制间的关系,当用户选择该标签时，浏�
 2.
 
 ```js
-location.href = "https://messiahhh.github.io/blog";
+location.href = 'https://messiahhh.github.io/blog';
 ```
 
 3.
@@ -179,7 +181,7 @@ location.href = "https://messiahhh.github.io/blog";
 
 ```js
 res.statusCode = 301; // or 302
-res.setHeader("Location", "https://messiahhh.github.io/blog");
+res.setHeader('Location', 'https://messiahhh.github.io/blog');
 ```
 
 ## **HTML5**

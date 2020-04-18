@@ -203,7 +203,7 @@ history.replaceState(stateObject, title, URL);
 ```
 
 ```js
-window.addEventListener("popstate", e => {
+window.addEventListener('popstate', (e) => {
   // e.state 就是 pushState(stateObject) 中的 stateObject
   console.log(e.state);
 });
@@ -554,23 +554,23 @@ MVVM 作为绑定的入口，整合 Observer，Compile 和 Watcher 三者
     <script src="./myVue.js"></script>
     <script>
       let vm = new myVue({
-        el: "##app",
+        el: '##app',
         data: {
           person: {
-            name: "zzf",
+            name: 'zzf',
             age: 24,
-            fav: "cjl"
+            fav: 'cjl',
           },
-          msg: "data中的msg",
-          htmlStr: "<h2>gogogo</h2>",
-          img: "./test.png",
-          title: "我是百度"
+          msg: 'data中的msg',
+          htmlStr: '<h2>gogogo</h2>',
+          img: './test.png',
+          title: '我是百度',
         },
         methods: {
           handleClick() {
-            this.person.name = "jeffrey";
-          }
-        }
+            this.person.name = 'jeffrey';
+          },
+        },
       });
     </script>
   </body>
@@ -580,10 +580,10 @@ MVVM 作为绑定的入口，整合 Observer，Compile 和 Watcher 三者
 ```js
 const compileUtil = {
   getVal(expr, vm) {
-    return expr.split(".").reduce((data, cur) => data[cur], vm.$data);
+    return expr.split('.').reduce((data, cur) => data[cur], vm.$data);
   },
   setVal(expr, vm, inputVal) {
-    expr.split(".").reduce((data, cur) => {
+    expr.split('.').reduce((data, cur) => {
       data[cur] = inputVal;
     }, vm.$data);
   },
@@ -594,7 +594,7 @@ const compileUtil = {
   },
   text(node, expr, vm) {
     let value;
-    if (expr.indexOf("{{") !== -1) {
+    if (expr.indexOf('{{') !== -1) {
       value = expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
         //绑定观察者，将来数据发生变化，触发这里的回调，进行更新
         new Watcher(vm, args[1], () => {
@@ -604,7 +604,7 @@ const compileUtil = {
       });
     } else {
       value = this.getVal(expr, vm);
-      new Watcher(vm, expr, newVal => {
+      new Watcher(vm, expr, (newVal) => {
         this.updater.textUpdater(node, newVal);
       });
     }
@@ -612,7 +612,7 @@ const compileUtil = {
   },
   html(node, expr, vm) {
     const value = this.getVal(expr, vm);
-    new Watcher(vm, expr, newVal => {
+    new Watcher(vm, expr, (newVal) => {
       this.updater.htmlUpdater(node, newVal);
     });
     this.updater.htmlUpdater(node, value);
@@ -620,11 +620,11 @@ const compileUtil = {
   model(node, expr, vm) {
     const value = this.getVal(expr, vm);
     //绑定更新函数 数据=>视图
-    new Watcher(vm, expr, newVal => {
+    new Watcher(vm, expr, (newVal) => {
       this.updater.modelUpdater(node, newVal);
     });
     //视图=>数据=>视图
-    node.addEventListener("input", e => {
+    node.addEventListener('input', (e) => {
       //设置值
       this.setVal(expr, vm, e.target.value);
     });
@@ -648,8 +648,8 @@ const compileUtil = {
     },
     htmlUpdater(node, value) {
       node.innerHTML = value;
-    }
-  }
+    },
+  },
 };
 
 class Compile {
@@ -679,7 +679,7 @@ class Compile {
   }
   compile(fragment) {
     const childNodes = fragment.childNodes;
-    [...childNodes].forEach(child => {
+    [...childNodes].forEach((child) => {
       if (this.isElementNode(child)) {
         this.compileElement(child);
       } else {
@@ -692,32 +692,32 @@ class Compile {
   }
   compileElement(node) {
     const attributes = node.attributes;
-    [...attributes].forEach(attr => {
+    [...attributes].forEach((attr) => {
       const { name, value } = attr;
       if (this.isDirective(name)) {
-        const [, directive] = name.split("-");
-        const [dirName, eventName] = directive.split(":");
+        const [, directive] = name.split('-');
+        const [dirName, eventName] = directive.split(':');
         //更新数据，数据驱动视图
         compileUtil[dirName](node, value, this.vm, eventName);
         //删除有指令的标签上的属性
-        node.removeAttribute("v-" + directive);
+        node.removeAttribute('v-' + directive);
       } else if (this.isEventName(name)) {
-        let [, eventName] = name.split("@");
-        compileUtil["on"](node, value, this.vm, eventName);
+        let [, eventName] = name.split('@');
+        compileUtil['on'](node, value, this.vm, eventName);
       }
     });
   }
   isEventName(attrName) {
-    return attrName.startsWith("@");
+    return attrName.startsWith('@');
   }
   isDirective(attrName) {
-    return attrName.startsWith("v-");
+    return attrName.startsWith('v-');
   }
   compileText(node) {
     //{{}}
     const content = node.textContent;
     if (/\{\{(.+?)\}\}/g.test(content)) {
-      compileUtil["text"](node, content, this.vm);
+      compileUtil['text'](node, content, this.vm);
     }
   }
 }
@@ -743,7 +743,7 @@ class myVue {
         },
         set(newVal) {
           data[key] = newVal;
-        }
+        },
       });
     }
   }
@@ -784,7 +784,7 @@ class Dep {
   }
   //通知观察者去更新
   notify() {
-    this.subs.forEach(w => w.update());
+    this.subs.forEach((w) => w.update());
   }
 }
 
@@ -793,8 +793,8 @@ class Observer {
     this.observe(data);
   }
   observe(data) {
-    if (data && typeof data === "object") {
-      Object.keys(data).forEach(key => {
+    if (data && typeof data === 'object') {
+      Object.keys(data).forEach((key) => {
         this.defineReacive(data, key, data[key]);
       });
     }
@@ -812,14 +812,14 @@ class Observer {
         Dep.target && dep.addSub(Dep.target);
         return value;
       },
-      set: newVal => {
+      set: (newVal) => {
         this.observe(newVal);
         if (newVal !== value) {
           value = newVal;
         }
         //告诉Dep通知变化
         dep.notify();
-      }
+      },
     });
   }
 }
@@ -847,13 +847,13 @@ const arrayProto = Array.prototype;
 export const arrayMethods = Object.create(arrayProto);
 // hack 以下几个函数
 const methodsToPatch = [
-  "push",
-  "pop",
-  "shift",
-  "unshift",
-  "splice",
-  "sort",
-  "reverse"
+  'push',
+  'pop',
+  'shift',
+  'unshift',
+  'splice',
+  'sort',
+  'reverse',
 ];
 methodsToPatch.forEach(function(method) {
   // 获得原生函数
@@ -864,11 +864,11 @@ methodsToPatch.forEach(function(method) {
     const ob = this.__ob__;
     let inserted;
     switch (method) {
-      case "push":
-      case "unshift":
+      case 'push':
+      case 'unshift':
         inserted = args;
         break;
-      case "splice":
+      case 'splice':
         inserted = args.slice(2);
         break;
     }
@@ -892,7 +892,7 @@ let onWatch = (obj, setBind, getLogger) => {
     set(target, property, value, receiver) {
       setBind(value);
       return Reflect.set(target, property, value);
-    }
+    },
   };
   return new Proxy(obj, handler);
 };
@@ -901,7 +901,7 @@ let obj = { a: 1 };
 let value;
 let p = onWatch(
   obj,
-  v => {
+  (v) => {
     value = v;
   },
   (target, property) => {
@@ -944,9 +944,9 @@ Object.defineProperty 深度监听，需要递归到底，一次性计算量大
 1. 子组件内部通过 props 接受传递过来的值
 
 ```js
-Vue.component("menu-item", {
-  props: ["title"],
-  template: "<div>{{title}}</div>"
+Vue.component('menu-item', {
+  props: ['title'],
+  template: '<div>{{title}}</div>',
 });
 ```
 
@@ -1019,7 +1019,7 @@ eventHub.$off("add-todo",this.addTodo);
 ```js
 //B.vue
 //调用自定义事件
-eventHub.$emit("add-todo", id);
+eventHub.$emit('add-todo', id);
 ```
 
 #### Ref
@@ -1061,14 +1061,14 @@ Vuex 是实现组件全局状态（数据）管理的一种机制，可以方便
 ```js
 //store/index.js
 
-import Vue from "vue";
-import Vuex from "vuex";
+import Vue from 'vue';
+import Vuex from 'vuex';
 
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
-    count: 99
+    count: 99,
   },
   mutations: {
     add(state) {
@@ -1082,36 +1082,36 @@ const store = new Vuex.Store({
     },
     subN(state, step) {
       state.count -= step;
-    }
+    },
   },
   actions: {
     addAsync(context) {
       setTimeout(() => {
-        context.commit("add");
+        context.commit('add');
       }, 1000);
     },
     addNAsync(context, step) {
       setTimeout(() => {
-        context.commit("addN", step);
+        context.commit('addN', step);
       }, 1000);
     },
     subAsync(context) {
       setTimeout(() => {
-        context.commit("sub");
+        context.commit('sub');
       }, 1000);
     },
     subNAsync(context, step) {
       setTimeout(() => {
-        context.commit("subN", step);
+        context.commit('subN', step);
       }, 1000);
-    }
+    },
   },
   getters: {
     //就像计算属性一样，getter 的返回值会根据它的依赖被缓存起来，且只有当它的依赖值发生了改变才会被重新计算。
     showNum(state) {
-      return "当前最新数量是【" + state.count + "】";
-    }
-  }
+      return '当前最新数量是【' + state.count + '】';
+    },
+  },
 });
 
 export default store;
@@ -1138,18 +1138,18 @@ export default store;
     },
     methods: {
       btnHandler1() {
-        this.$store.commit("add");
+        this.$store.commit('add');
       },
       btnHandler2() {
-        this.$store.commit("addN", 3);
+        this.$store.commit('addN', 3);
       },
       btnHandler3() {
-        this.$store.dispatch("addAsync");
+        this.$store.dispatch('addAsync');
       },
       btnHandler4() {
-        this.$store.dispatch("addNAsync", 3);
-      }
-    }
+        this.$store.dispatch('addNAsync', 3);
+      },
+    },
   };
 </script>
 ```
@@ -1169,19 +1169,19 @@ export default store;
 </template>
 
 <script>
-  import { mapState, mapMutations, mapActions, mapGetters } from "vuex";
+  import { mapState, mapMutations, mapActions, mapGetters } from 'vuex';
   export default {
     data() {
       return {};
     },
     computed: {
-      ...mapState(["count"]),
-      ...mapGetters(["showNum"])
+      ...mapState(['count']),
+      ...mapGetters(['showNum']),
     },
     methods: {
-      ...mapMutations(["sub", "subN"]),
-      ...mapActions(["subAsync", "subNAsync"])
-    }
+      ...mapMutations(['sub', 'subN']),
+      ...mapActions(['subAsync', 'subNAsync']),
+    },
   };
 </script>
 ```
@@ -1205,13 +1205,13 @@ Vuex 中所有的状态更新的唯一途径都是 mutation，异步操作通过
 
 ```js
 const User = {
-  template: "<div>User {{ $route.params.id }}</div>"
+  template: '<div>User {{ $route.params.id }}</div>',
 };
 const router = new VueRouter({
   routes: [
     // 动态路径参数 以冒号开头
-    { path: "/user/:id", component: User }
-  ]
+    { path: '/user/:id', component: User },
+  ],
 });
 ```
 
@@ -1228,7 +1228,7 @@ const User = {
   <!-- router-view 路由出口, 路由匹配到的组件将渲染在这里 -->
   <router-view></router-view>
 </div>
-`
+`,
 };
 ```
 
@@ -1236,24 +1236,24 @@ const User = {
 const router = new VueRouter({
   routes: [
     {
-      path: "/user/:id",
+      path: '/user/:id',
       component: User,
       children: [
         {
           // 当 /user/:id/profile 匹配成功，
           // UserProfile 会被渲染在 User 的 <router-view> 中
-          path: "profile",
-          component: UserProfile
+          path: 'profile',
+          component: UserProfile,
         },
         {
           // 当 /user/:id/posts 匹配成功
           // UserPosts 会被渲染在 User 的 <router-view> 中
-          path: "posts",
-          component: UserPosts
-        }
-      ]
-    }
-  ]
+          path: 'posts',
+          component: UserPosts,
+        },
+      ],
+    },
+  ],
 });
 ```
 
@@ -1266,13 +1266,13 @@ home.vue，点击显示就会将子路由显示在出来，子路由的出口必
 
 ```js
 // 字符串
-router.push("home");
+router.push('home');
 // 对象
-router.push({ path: "home" });
+router.push({ path: 'home' });
 // 命名的路由
-router.push({ name: "user", params: { userId: "123" } });
+router.push({ name: 'user', params: { userId: '123' } });
 // 带查询参数，变成 /register?plan=private
-router.push({ path: "register", query: { plan: "private" } });
+router.push({ path: 'register', query: { plan: 'private' } });
 ```
 
 ### 路由模式
@@ -1311,7 +1311,7 @@ const Foo = () =>
 第二，在 Webpack 2 中，我们可以使用动态 import 语法来定义代码分块点 (split point)：
 
 ```js
-import("./Foo.vue"); // 返回 Promise
+import('./Foo.vue'); // 返回 Promise
 ```
 
 注意
@@ -1321,7 +1321,7 @@ import("./Foo.vue"); // 返回 Promise
 结合这两者，这就是如何定义一个能够被 Webpack 自动代码分割的异步组件。
 
 ```js
-const Foo = () => import("./Foo.vue");
+const Foo = () => import('./Foo.vue');
 ```
 
 ## **Vue 前后端交互**
@@ -1342,25 +1342,25 @@ const Foo = () => import("./Foo.vue");
 1. GET 传递参数(DELETE 类似)
 
 ```js
-axios.get("/data?id=123").then(ret => {
+axios.get('/data?id=123').then((ret) => {
   console.log(ret.data);
 });
 ```
 
 ```js
-axios.get("/data/123").then(ret => {
+axios.get('/data/123').then((ret) => {
   console.log(ret.data);
 });
 ```
 
 ```js
 axios
-  .get("/data", {
+  .get('/data', {
     params: {
-      id: 123
-    }
+      id: 123,
+    },
   })
-  .then(ret => {
+  .then((ret) => {
     console.log(ret.data);
   });
 ```
@@ -1371,11 +1371,11 @@ axios
 
 ```js
 axios
-  .post("/data", {
-    uname: "tom",
-    pwd: 123
+  .post('/data', {
+    uname: 'tom',
+    pwd: 123,
   })
-  .then(ret => {
+  .then((ret) => {
     console.log(ret.data);
   });
 ```
@@ -1384,9 +1384,9 @@ axios
 
 ```js
 const params = new URLSearchParams();
-params.append("param1", "value1");
-params.append("param2", "value2");
-axios.post("/api/test/", params).then(ret => {
+params.append('param1', 'value1');
+params.append('param2', 'value2');
+axios.post('/api/test/', params).then((ret) => {
   console.log(ret.data);
 });
 ```
@@ -1418,7 +1418,7 @@ axios.interceptors.request.use(
   function(config) {
     //在请求发出之前进行一些信息设置
     console.log(config.url);
-    config.headers.mytoken = "nihao";
+    config.headers.mytoken = 'nihao';
     return config;
   },
   function(err) {
@@ -1444,23 +1444,7 @@ axios.interceptors.response.use(
 
 ## **scoped**
 
-当 style 标签具有该 scoped 属性时，其 CSS 将仅应用于当前组件的元素
-
-```html
-<style scoped>
-  .example {
-    color: red;
-  }
-</style>
-
-<template>
-  <div class="example">hi</div>
-</template>
-```
-
-vue 中 style 标签中设置 scoped 的原理:
-
-这个局部样式是通过 PostCSS 给组件中所有的 DOM 添加了一个独一无二的动态属性，然后通过 CSS 属性选择器来选择组件中的 DOM
+[Vue:scoped 与 module 的使用与利弊](https://www.jianshu.com/p/b12941cf96b6)
 
 ## **vue.config.js**
 
@@ -1481,8 +1465,8 @@ Vue 不能检测对象属性的添加或删除
 ```js
 var vm = new Vue({
   data: {
-    a: 1
-  }
+    a: 1,
+  },
 });
 // `vm.a` 现在是响应式的
 
@@ -1496,22 +1480,22 @@ vm.b = 2;
 var vm = new Vue({
   data: {
     userProfile: {
-      name: "Anika"
-    }
-  }
+      name: 'Anika',
+    },
+  },
 });
 ```
 
 你可以添加一个新的 age 属性到嵌套的 userProfile 对象：
 
 ```js
-Vue.set(vm.userProfile, "age", 27);
+Vue.set(vm.userProfile, 'age', 27);
 ```
 
 你还可以使用 vm.\$set 实例方法，它只是全局 Vue.set 的别名：
 
 ```js
-vm.$set(vm.userProfile, "age", 27);
+vm.$set(vm.userProfile, 'age', 27);
 ```
 
 虽然数组也是对象，Object.defineProperty 却不支持数组。
