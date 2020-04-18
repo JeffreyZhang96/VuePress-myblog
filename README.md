@@ -1,1 +1,1 @@
-VuePress+vuepress-theme-reco搭建的个人博客(个人知识点总结向...)
+VuePress+vuepress-theme-reco搭建的个人博客(知识点总结向)
