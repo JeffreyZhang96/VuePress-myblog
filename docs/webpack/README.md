@@ -19,19 +19,19 @@ webpack.config.js 是 webpack 的默认打包配置文件。也可以`npx webpac
 /**
  * Wepack配置接口
  */
-const path = require("path");
+const path = require('path');
 
 module.exports = {
   // 打包模式
-  mode: "production",
+  mode: 'production',
   // 入口
-  entry: "./index.js",
+  entry: './index.js',
   // 出口
   output: {
-    filename: "bundle.js",
+    filename: 'bundle.js',
     // path 后必须是一个绝对位置
-    path: path.resolve(__dirname, "bundle")
-  }
+    path: path.resolve(__dirname, 'bundle'),
+  },
 };
 ```
 
@@ -39,7 +39,7 @@ module.exports = {
 
 ```js
 entry: {
-  main: "./index.js";
+  main: './index.js';
 }
 ```
 
@@ -56,12 +56,12 @@ chunk 表示一个文件，默认情况下 webpack 的输入是一个入口文�
 ```js
 module.exports = {
   entry: {
-    collection: "./src/main.js" // collection为chunk的名字，chunk的入口文件是main.js
+    collection: './src/main.js', // collection为chunk的名字，chunk的入口文件是main.js
   },
   output: {
-    path: "./dist/js",
-    filename: "[name].[chunkHash].js" // 输出到dist/js目录下，以collection+chunk内容的md5值作为输出的文件名
-  }
+    path: './dist/js',
+    filename: '[name].[chunkHash].js', // 输出到dist/js目录下，以collection+chunk内容的md5值作为输出的文件名
+  },
 };
 ```
 
@@ -162,14 +162,14 @@ Webpack 的运行流程是一个串行的过程，从启动到结束会依次执
 
 ```js
 module.exports = {
-  entry: path.join(srcPath, "index"),
+  entry: path.join(srcPath, 'index'),
   module: {
     rules: [
       {
         test: /\.js$/,
-        loader: ["babel-loader"],
+        loader: ['babel-loader'],
         include: srcPath,
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       // {
       //     test: /\.vue$/,
@@ -184,21 +184,21 @@ module.exports = {
       {
         test: /\.css$/,
         // loader 的执行顺序是：从后往前
-        loader: ["style-loader", "css-loader", "postcss-loader"] // 加了 postcss
+        loader: ['style-loader', 'css-loader', 'postcss-loader'], // 加了 postcss
       },
       {
         test: /\.less$/,
         // 增加 'less-loader' ，注意顺序
-        loader: ["style-loader", "css-loader", "less-loader"]
-      }
-    ]
+        loader: ['style-loader', 'css-loader', 'less-loader'],
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(srcPath, "index.html"),
-      filename: "index.html"
-    })
-  ]
+      template: path.join(srcPath, 'index.html'),
+      filename: 'index.html',
+    }),
+  ],
 };
 ```
 
@@ -268,9 +268,9 @@ Source map 就是一个信息文件，里面储存着位置信息。也就是说
 ```js
 function sayHello(name) {
   if (name.length > 2) {
-    name = name.substr(0, 1) + "...";
+    name = name.substr(0, 1) + '...';
   }
-  console.log("hello,", name);
+  console.log('hello,', name);
 }
 ```
 
@@ -279,12 +279,12 @@ function sayHello(name) {
 ```js
 function sayHello(name) {
   if (name.length > 2) {
-    name = name.substr(0, 1) + "...";
+    name = name.substr(0, 1) + '...';
   }
-  console.log("hello,", name);
+  console.log('hello,', name);
 }
-sayHello("世界");
-sayHello("第三世界的人们");
+sayHello('世界');
+sayHello('第三世界的人们');
 ```
 
 map 文件
@@ -304,3 +304,35 @@ TODO
 - 优化图片，对于小图可以使用 base64 的方式写入文件中
 - 按照路由拆分代码，实现按需加载
 - 给打包出来的文件名添加 hash，js 文件如果有内容更新，hash 就会更新，浏览器请求路径变化所以更新缓存，如果 js 内容不变，hash 不变，直接用缓存，
+
+【打包公共代码】
+
+使用 CommonsChunkPlugin 插件，将公共模块拆出来，最终合成的文件能够在最开始的时候加载一次，便存到缓存中供后续使用。这会带来速度上的提升，因为浏览器会迅速将公共的代码从缓存中取出来，而不是每次访问一个新页面时，再去加载一个更大的文件
+
+webpack 4 将移除 CommonsChunkPlugin, 取而代之的是两个新的配置项 optimization.splitChunks 和 optimization.runtimeChunk
+
+通过设置 optimization.splitChunks.chunks: "all" 来启动默认的代码分割配置项
+
+【动态导入和按需加载】
+
+webpack 提供了两种技术通过模块的内联函数调用来分离代码，优先选择的方式是，使用符合 ECMAScript 提案 的 import() 语法。第二种，则是使用 webpack 特定的 require.ensure
+
+【剔除无用代码】
+
+tree shaking 是一个术语，通常用于描述移除 JavaScript 上下文中的未引用代码(dead-code)。它依赖于 ES2015 模块系统中的静态结构特性，例如 import 和 export。这个术语和概念实际上是兴起于 ES2015 模块打包工具 rollup
+
+JS 的 tree shaking 主要通过 uglifyjs 插件来完成，CSS 的 tree shaking 主要通过 purify CSS 来实现的
+
+【长缓存优化】
+
+1、将 hash 替换为 chunkhash，这样当 chunk 不变时，缓存依然有效
+
+2、使用 Name 而不是 id
+
+每个 module.id 会基于默认的解析顺序(resolve order)进行增量。也就是说，当解析顺序发生变化，ID 也会随之改变
+
+下面来使用两个插件解决这个问题。第一个插件是 NamedModulesPlugin，将使用模块的路径，而不是数字标识符。虽然此插件有助于在开发过程中输出结果的可读性，然而执行时间会长一些。第二个选择是使用 HashedModuleIdsPlugin，推荐用于生产环境构建
+
+【公用代码内联】
+
+使用 html-webpack-inline-chunk-plugin 插件将 mainfest.js 内联到 html 文件中

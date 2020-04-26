@@ -1,6 +1,7 @@
 ---
 title: CSS
 ---
+
 ## **基础知识**
 
 ### 默认样式
@@ -54,18 +55,6 @@ ul {
 
 1. 减少整体图片的质量，网页的图片加载速度快
 2. 减少图片的请求次数，加快网页的打开
-
-### 用 CSS 创建一个三角形
-
-```css
-.tri {
-  width: 0px;
-  height: 0px;
-  border-style: solid;
-  border-width: 100px;
-  border-color: transparent transparent red transparent;
-}
-```
 
 ### DOM 层级顺序与 z-index
 
@@ -717,7 +706,7 @@ Animation-->在这个动画之前，先看 Keyframes 关键帧，支持 animatio
 3. mixin 混合宏
 
 ```scss
-@mixin bgImg($w: 0, $h: 0, $img: "", $size: contain) {
+@mixin bgImg($w: 0, $h: 0, $img: '', $size: contain) {
   display: inline-block;
   width: $w;
   height: $h;
@@ -725,7 +714,7 @@ Animation-->在这个动画之前，先看 Keyframes 关键帧，支持 animatio
   background-size: $size;
 }
 
-@include bgImg(55px, 55px, "/imgs/mi-logo.png", 55px);
+@include bgImg(55px, 55px, '/imgs/mi-logo.png', 55px);
 ```
 
 ## **布局**

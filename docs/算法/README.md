@@ -805,6 +805,41 @@ var decode = function(arr, n) {
 };
 ```
 
+### 验证回文串 lc125
+
+> API
+
+```js
+var isPalindrome = function(s) {
+  let temp = s.replace(/\W/g, '').toLowerCase();
+  return (
+    temp ===
+    temp
+      .split('')
+      .reverse()
+      .join('')
+  );
+};
+```
+
+> 双指针
+
+```js
+var isPalindrome = function(s) {
+  let temp = s.replace(/\W/g, '').toLowerCase();
+  let left = 0;
+  let right = temp.length - 1;
+  while (left < right) {
+    if (temp[left] != temp[right]) {
+      return false;
+    }
+    left++;
+    right--;
+  }
+  return true;
+};
+```
+
 ### 字符串相加 lc415
 
 > [padStart](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/padStart)

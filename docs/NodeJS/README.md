@@ -1,3 +1,6 @@
+---
+title: NodeJS
+---
 
 ## **基础知识**
 
@@ -39,15 +42,15 @@
 
 ```js
 setImmediate(() => {
-  console.log("setImmediate");
+  console.log('setImmediate');
 });
 
 setTimeout(() => {
-  console.log("setImmediate");
+  console.log('setImmediate');
 }, 0);
 
 process.nextTick(() => {
-  console.log("next");
+  console.log('next');
 });
 ```
 
@@ -102,9 +105,9 @@ JavaScript 程序是由事件驱动执行的单线程模型，Node.js 也不例�
 
 // process.nextTick()将在下一轮事件循环中调用:
 process.nextTick(function() {
-  console.log("nextTick callback!");
+  console.log('nextTick callback!');
 });
-console.log("nextTick was set!");
+console.log('nextTick was set!');
 ```
 
 用 Node 执行上面的代码 node test.js，你会看到，打印输出是：
@@ -120,8 +123,8 @@ Node.js 进程本身的事件就由 process 对象来处理。如果我们响应
 
 ```js
 // 程序即将退出时的回调函数:
-process.on("exit", function(code) {
-  console.log("about to exit with code: " + code);
+process.on('exit', function(code) {
+  console.log('about to exit with code: ' + code);
 });
 ```
 
@@ -130,10 +133,10 @@ process.on("exit", function(code) {
 有很多 JavaScript 代码既能在浏览器中执行，也能在 Node 环境执行，但有些时候，程序本身需要判断自己到底是在什么环境下执行的，常用的方式就是根据浏览器和 Node 环境提供的全局变量名称来判断：
 
 ```js
-if (typeof window === "undefined") {
-  console.log("node.js");
+if (typeof window === 'undefined') {
+  console.log('node.js');
 } else {
-  console.log("browser");
+  console.log('browser');
 }
 ```
 
@@ -146,17 +149,17 @@ Node.js 内置的 fs 模块就是文件系统模块，负责读写文件。
 回顾一下什么是异步方法。因为 JavaScript 的单线程模型，执行 IO 操作时，JavaScript 代码无需等待，而是传入回调函数后，继续执行后续 JavaScript 代码。比如 jQuery 提供的 getJSON()操作：
 
 ```js
-$.getJSON("http://example.com/ajax", function(data) {
-  console.log("IO 结果返回后执行...");
+$.getJSON('http://example.com/ajax', function(data) {
+  console.log('IO 结果返回后执行...');
 });
-console.log("不等待 IO 结果直接执行后续代码...");
+console.log('不等待 IO 结果直接执行后续代码...');
 ```
 
 而同步的 IO 操作则需要等待函数返回：
 
 ```js
 // 根据网络耗时，函数将执行几十毫秒~几秒不等:
-var data = getJSONSync("http://example.com/ajax");
+var data = getJSONSync('http://example.com/ajax');
 ```
 
 同步操作的好处是代码简单，缺点是程序将等待 IO 操作，在等待时间内，无法响应其它任何事件。而异步读取不用等待 IO 操作，但代码较麻烦。
@@ -166,11 +169,11 @@ var data = getJSONSync("http://example.com/ajax");
 按照 JavaScript 的标准，异步读取一个文本文件的代码如下：
 
 ```js
-"use strict";
+'use strict';
 
-var fs = require("fs");
+var fs = require('fs');
 
-fs.readFile("sample.txt", "utf-8", function(err, data) {
+fs.readFile('sample.txt', 'utf-8', function(err, data) {
   if (err) {
     console.log(err);
   } else {
@@ -198,16 +201,16 @@ if (err) {
 下面的例子演示了如何读取一个图片文件：
 
 ```js
-"use strict";
+'use strict';
 
-var fs = require("fs");
+var fs = require('fs');
 
-fs.readFile("sample.png", function(err, data) {
+fs.readFile('sample.png', function(err, data) {
   if (err) {
     console.log(err);
   } else {
     console.log(data);
-    console.log(data.length + " bytes");
+    console.log(data.length + ' bytes');
   }
 });
 ```
@@ -218,7 +221,7 @@ Buffer 对象可以和 String 作转换，例如，把一个 Buffer 对象转换
 
 ```js
 // Buffer -> String
-var text = data.toString("utf-8");
+var text = data.toString('utf-8');
 console.log(text);
 ```
 
@@ -226,7 +229,7 @@ console.log(text);
 
 ```js
 // String -> Buffer
-var buf = Buffer.from(text, "utf-8");
+var buf = Buffer.from(text, 'utf-8');
 console.log(buf);
 ```
 
@@ -237,11 +240,11 @@ console.log(buf);
 用 fs 模块同步读取一个文本文件的代码如下：
 
 ```js
-"use strict";
+'use strict';
 
-var fs = require("fs");
+var fs = require('fs');
 
-var data = fs.readFileSync("sample.txt", "utf-8");
+var data = fs.readFileSync('sample.txt', 'utf-8');
 console.log(data);
 ```
 
@@ -251,7 +254,7 @@ console.log(data);
 
 ```js
 try {
-  var data = fs.readFileSync("sample.txt", "utf-8");
+  var data = fs.readFileSync('sample.txt', 'utf-8');
   console.log(data);
 } catch (err) {
   // 出错了
@@ -263,16 +266,16 @@ try {
 将数据写入文件是通过 fs.writeFile()实现的：
 
 ```js
-"use strict";
+'use strict';
 
-var fs = require("fs");
+var fs = require('fs');
 
-var data = "Hello, Node.js";
-fs.writeFile("output.txt", data, function(err) {
+var data = 'Hello, Node.js';
+fs.writeFile('output.txt', data, function(err) {
   if (err) {
     console.log(err);
   } else {
-    console.log("ok.");
+    console.log('ok.');
   }
 });
 ```
@@ -282,12 +285,12 @@ writeFile()的参数依次为文件名、数据和回调函数。如果传入的
 和 readFile()类似，writeFile()也有一个同步方法，叫 writeFileSync()：
 
 ```js
-"use strict";
+'use strict';
 
-var fs = require("fs");
+var fs = require('fs');
 
-var data = "Hello, Node.js";
-fs.writeFileSync("output.txt", data);
+var data = 'Hello, Node.js';
+fs.writeFileSync('output.txt', data);
 ```
 
 #### stat
@@ -295,25 +298,25 @@ fs.writeFileSync("output.txt", data);
 如果我们要获取文件大小，创建时间等信息，可以使用 fs.stat()，它返回一个 Stat 对象，能告诉我们文件或目录的详细信息：
 
 ```js
-"use strict";
+'use strict';
 
-var fs = require("fs");
+var fs = require('fs');
 
-fs.stat("sample.txt", function(err, stat) {
+fs.stat('sample.txt', function(err, stat) {
   if (err) {
     console.log(err);
   } else {
     // 是否是文件:
-    console.log("isFile: " + stat.isFile());
+    console.log('isFile: ' + stat.isFile());
     // 是否是目录:
-    console.log("isDirectory: " + stat.isDirectory());
+    console.log('isDirectory: ' + stat.isDirectory());
     if (stat.isFile()) {
       // 文件大小:
-      console.log("size: " + stat.size);
+      console.log('size: ' + stat.size);
       // 创建时间, Date 对象:
-      console.log("birth time: " + stat.birthtime);
+      console.log('birth time: ' + stat.birthtime);
       // 修改时间, Date 对象:
-      console.log("modified time: " + stat.mtime);
+      console.log('modified time: ' + stat.mtime);
     }
   }
 });
@@ -345,13 +348,7 @@ stat()也有一个对应的同步函数 statSync()，请试着改写上述异步
 
 ### crypto
 
-## **事件轮询**
-
-### Node 中的 Event Loop
-
----
-
-#### 1.Node 简介
+## **Event Loop**
 
 Node 中的 Event Loop 和浏览器中的是完全不相同的东西。Node.js 采用 V8 作为 js 的解析引擎，而 I/O 处理方面使用了自己设计的 libuv，libuv 是一个基于事件驱动的跨平台抽象层，封装了不同操作系统一些底层特性，对外提供统一的 API，事件循环机制也是它里面的实现（下文会详细介绍）。
 
@@ -362,7 +359,7 @@ Node 中的 Event Loop 和浏览器中的是完全不相同的东西。Node.js �
 - libuv 库负责 Node API 的执行。它将不同的任务分配给不同的线程，形成一个 Event Loop（事件循环），以异步的方式将任务的执行结果返回给 V8 引擎。
 - V8 引擎再将结果返回给用户。
 
-#### 2.六个阶段
+### 六个阶段
 
 其中 libuv 引擎中的事件循环分为 6 个阶段，它们会按照顺序反复运行。每当进入某一个阶段的时候，都会从对应的回调队列中取出函数去执行。当队列为空或者执行的回调函数数量到达系统设定的阈值，就会进入下一阶段。
 
@@ -370,7 +367,21 @@ Node 中的 Event Loop 和浏览器中的是完全不相同的东西。Node.js �
 
 从上图中，大致看出 node 中的事件循环的顺序：
 
-外部输入数据-->轮询阶段(poll)-->检查阶段(check)-->关闭事件回调阶段(close callback)-->定时器检测阶段(timer)-->I/O 事件回调阶段(I/O callbacks)-->闲置阶段(idle, prepare)-->轮询阶段（按照该顺序反复运行）...
+外部输入数据
+
+轮询阶段(poll)
+
+检查阶段(check)
+
+关闭事件回调阶段(close callback)
+
+定时器检测阶段(timer)
+
+I/O 事件回调阶段(I/O callbacks)
+
+闲置阶段(idle, prepare)
+
+轮询阶段（按照该顺序反复运行）
 
 - timers 阶段：这个阶段执行 timer（setTimeout、setInterval）的回调
 - I/O callbacks 阶段：处理一些上一轮循环中的少数未执行的 I/O 回调

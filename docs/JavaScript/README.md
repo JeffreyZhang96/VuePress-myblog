@@ -209,12 +209,9 @@ BigInt 可以正常地进行位运算，如|、&、<<、>>和^
 #### 判断 Array
 
 - `Array.isArray(obj)`
-  - ECMAScript 5 中的函数，当使用 ie8 的时候就会出现问题。
 - `obj instanceof Array`
-  - 当用来检测在不同的 window 或 iframe 里构造的数组时会失败。这是因为每一个 iframe 都有它自己的执行环境，彼此之间并不共享原型链，所以此时的判断一个对象是否为数组就会失败。此时我们有一个更好的方式去判断一个对象是否为数组。
 - `Object.prototype.toString.call(obj) == '[object Array]'`
 - `obj.constructor === Array`
-  - constructor 属性返回对创建此对象的函数的引用
 
 #### isNaN 和 Number.isNaN 函数
 
@@ -266,21 +263,12 @@ BigInt 可以正常地进行位运算，如|、&、<<、>>和^
 3. 调用 toString()，如果转换为原始类型，则返回
 4. 如果都没有返回原始类型，就会报错 TypeError
 
+![](/toStringvalueOf.jpg)
+
 #### ==和===
 
-宽松相等(loose equals) ==
-
-严格相等(strict equals) ===
-
-判断流程：
-
-1. 首先会判断两者类型是否相同。相同使用===比较
-2. 类型不相同的话，那么就会进行类型转换
-3. 会先判断是否在对比 null 和 undefined，是的话就会返回 true
-4. 判断两者类型是否为 string 和 number，是的话就会将字符串转换为 number
-5. 判断其中一方是否为 boolean，是的话就会把 boolean 转为 number 再进行判断
-6. 判断其中一方是否为 object 且另一方为 string、number 或者 symbol，是的话就会把 object 转为原始类型再进行判断
-7. 两边都是对象的话，那么只要不是同一对象的不同引用，都为 false
+![](/==.png)
+![](/宽松相等.jpg)
 
 注意，只要出现 NaN，就一定是 false，因为就连 NaN 自己都不等于 NaN
 对于 NaN，判断的方法是使用全局函数 `isNaN()`
@@ -289,15 +277,15 @@ BigInt 可以正常地进行位运算，如|、&、<<、>>和^
 
 #### [] == ![]
 
-== 中，左右两边都需要转换为数字然后进行比较。
-[]转换为数字为 0。
-![] 首先是转换为布尔值，由于[]作为一个引用类型转换为布尔值为 true,
-因此![]为 false，进而在转换成数字，变为 0。
-0 == 0 ， 结果为 true
+1. !优先于==，且[]为真值(转成 boolean，结果为 true 的就为真值，包括{}；转成 false 的就为假值)，![]结果为 false，所以当前表达式转化为 []==false
+2. 任何类型与 boolean 类型比较，所以[]==false 转化为 []==0 比较
+3. 此时变为 object 与 0 比较，调用 object 的转换成原始类型的方法 valueOf 其结果还是 valueOf
+4. 再调用 toString 结果为''，再进行 string 转成 number，则[]转成数字类型 0
+5. 表达式进一步转换成 0==0，结果为 true。
 
 #### Object.is ===
 
-[Object.is()](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/is) 在严格等于的基础上修复了一些特殊情况下的失误，具体来说就是+0 和-0，NaN 和 NaN。
+[Object.is()](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/is) 与===基本相同，不同点在于 Object.is 判断+0 不等于-0，NaN 等于自身
 
 ```js
 
@@ -652,6 +640,39 @@ result; // "Barry"
 
 [this/apply/call 问点](https://juejin.im/post/5e3e796d518825495b298878)
 
+### 绑定方式
+
+[40 道 this 面试题](https://juejin.im/post/5e6358256fb9a07cd80f2e70)
+
+- 默认绑定：非严格模式下 this 指向全局对象，严格模式下 this 会绑定到 undefined
+- 隐式绑定：当函数引用有上下文对象时，指向这个对象，obj.foo()
+- 显示绑定：call/apply/bind
+- new 绑定
+- 箭头函数绑定：this 指向由外层作用域决定
+
+开启了严格模式，只是说使得函数内的 this 指向 undefined，它并不会改变全局中 this 的指向
+
+this 永远指向最后调用它的那个对象
+
+如果 call、apply、bind 接收到的第一个参数是空或者 null、undefined 的话，则会忽略这个参数
+
+调用定时器的始终是 window
+
+匿名函数的 this 永远指向 window
+
+它里面的 this 是由外层作用域来决定的，且指向函数定义时的 this 而非执行时。箭头函数中没有 this 绑定，必须通过查找作用域链来决定其值，如果箭头函数被非箭头函数包含，则 this 绑定的是最近一层非箭头函数的 this，否则，this 为 undefined。
+
+#### 隐式绑定丢失
+
+隐式丢失其实就是被隐式绑定的函数在特定的情况下会丢失绑定对象
+
+有两种情况容易发生隐式丢失问题：
+
+1. 使用另一个变量来给函数取别名
+2. 将函数作为参数传递时会被隐式赋值，回调函数丢失 this 绑定
+
+把一个函数当成参数传递到另一个函数的时候，也会发生隐式丢失的问题，且与包裹着它的函数的 this 指向无关。在非严格模式下，会把该函数的 this 绑定到 window 上，严格模式下绑定到 undefined
+
 ### 优先级
 
 构造函数调用>call,apply,bind 函数>方法调用模式>函数调用模式
@@ -741,8 +762,6 @@ test().fn();
 
 - 如果在绑定 fn 的时候使用了 function，那么答案会是 'jack'
 - 如果第一行的 var 改为了 let，那么答案会是 undefind， 因为 let 不会挂到 window 上
-
-### call、apply、bind
 
 ## **对象**
 
@@ -1444,6 +1463,8 @@ Object.create() = function(obj) {
 };
 ```
 
+new 关键字创建的对象会保留原构造函数的属性，而用 Object.create()创建的对象不会
+
 ### ES6 继承
 
 ```js
@@ -1475,7 +1496,16 @@ b.y; //200
 
 ## **AJAX**
 
-### 手写 ajax
+Ajax 即“Asynchronous Javascript And XML”（异步 JavaScript 和 XML），是指一种创建交互式、快速动态网页应用的网页开发技术，无需重新加载整个网页的情况下，能够更新部分网页的技术
+
+通过在后台与服务器进行少量数据交换，Ajax 可以使网页实现异步更新。这意味着可以在不重新加载整个网页的情况下，对网页的某部分进行更新。
+
+[从 ajax 到 fetch、axios](https://juejin.im/post/5acde23c5188255cb32e7e76)
+[ajax 和 axios、fetch 的区别](https://www.jianshu.com/p/8bc48f8fde75)
+
+### 原生 ajax
+
+#### 手写 ajax
 
 ```js
 function ajax(url) {
@@ -1506,7 +1536,11 @@ ajax(url)
   });
 ```
 
-### AJAX 和 fetch 区别
+### 基于 jQuery 的 ajax
+
+### [fetch](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)
+
+#### AJAX 和 fetch 区别
 
 1. AJAX 和 Fetch 发送同源请求时都默认携带 Cookie，跨域请求则都默认不携带 Cookie。
 
@@ -1563,18 +1597,127 @@ xhr.ontimeout = () => {};
 
 我们如何实现 fetch 的超时控制
 
-```
+```js
 Promise.race([
-fetch(url),
-new Promise((resolve, reject) => {
-setTimeout(() => reject(new Error("request timeout")), 2000)
-})
+  fetch(url),
+  new Promise((resolve, reject) => {
+    setTimeout(() => reject(new Error('request timeout')), 2000);
+  }),
 ])
-.then(data => {}) // 请求成功
-.catch(reason => {}) // 请求失败
+  .then((data) => {}) // 请求成功
+  .catch((reason) => {}); // 请求失败
 ```
 
 4. fetch 无法检测请求的进度(onprogress)
+
+### axios
+
+[axios 中文说明](https://www.kancloud.cn/yunye/axios/234845)
+
+#### axios 的参数传递
+
+1. GET 传递参数(DELETE 类似)
+
+```js
+axios.get('/data?id=123').then((ret) => {
+  console.log(ret.data);
+});
+```
+
+```js
+axios.get('/data/123').then((ret) => {
+  console.log(ret.data);
+});
+```
+
+```js
+axios
+  .get('/data', {
+    params: {
+      id: 123,
+    },
+  })
+  .then((ret) => {
+    console.log(ret.data);
+  });
+```
+
+2. POST 传递参数(PUT 类似)
+
+通过选项传递参数(默认传递的是 json 格式的数据)
+
+```js
+axios
+  .post('/data', {
+    uname: 'tom',
+    pwd: 123,
+  })
+  .then((ret) => {
+    console.log(ret.data);
+  });
+```
+
+通过 URLSearchParams 传递参数(application/x-www-form-urlencoded)
+
+```js
+const params = new URLSearchParams();
+params.append('param1', 'value1');
+params.append('param2', 'value2');
+axios.post('/api/test/', params).then((ret) => {
+  console.log(ret.data);
+});
+```
+
+#### axios 的响应结果
+
+1. data：实际响应回来的数据
+
+2. headers：响应头信息
+
+3. status：响应状态码
+
+4. statusText：响应状态信息
+
+#### axios 的全局配置
+
+1. axios.defaults.timeout=3000; //超时时间
+
+2. axios.defaults.baseURL = "http://localhost:3000/app" //默认地址
+
+3. axios.defaults.headers["mytoken"]= "asdfadfaf" //设置请求头
+
+#### axios 拦截器
+
+1. 请求拦截器
+
+```js
+axios.interceptors.request.use(
+  function(config) {
+    //在请求发出之前进行一些信息设置
+    console.log(config.url);
+    config.headers.mytoken = 'nihao';
+    return config;
+  },
+  function(err) {
+    //处理响应错误信息
+  }
+);
+```
+
+2. 响应拦截器
+
+```js
+axios.interceptors.response.use(
+  function(res) {
+    //在这里对返回的数据进行处理
+    var data = res.data;
+    return data;
+  },
+  function(err) {
+    //处理响应的错误信息
+  }
+);
+```
 
 ## **ES6**
 
