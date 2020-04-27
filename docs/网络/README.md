@@ -119,6 +119,8 @@ TRACE: 追踪请求-响应的传输路径
 4. 幂等性，GET 是幂等的，而 POST 不是
 5. 从 TCP 的角度，GET 请求会把请求报文一次性发出去，而 POST 会分为两个 TCP 数据包，首先发 header 部分，如果服务器响应 100(continue)， 然后发 body 部分。(火狐浏览器除外，它的 POST 请求只发一个 TCP 包)
 
+[POST 的 Content-Type 引发的 HTTP 相关知识思考](https://blog.csdn.net/woaixiaoyu520/article/details/76690686)
+
 #### PUT 和 POST
 
 如果一个运算重复执行多次，产生的效果是一样的，那就是幂等。

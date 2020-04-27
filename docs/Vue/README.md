@@ -1,3 +1,7 @@
+---
+title: Vue
+---
+
 ## **单页面应用程序 SPA**
 
 ### 定义
@@ -109,7 +113,7 @@ index index.html;
 
 break 并不是重定向说告诉浏览器你重新去访问 XXX.html 。。而是说内部去找 /index.html 页面。去 /data/build 目前下找就好。找到就返回页面内容（这不就是我们要的 index.html 的内容啊），浏览器是无感知的。这样就保证了在 url 不变的情况 下固定返回 index.html 内容啦。。如果在/data/build 中没找到 index.html 就会 404 了。
 
-## **MVC、MVP、VVM**
+## **MVC、MVP、MVVM**
 
 ### MVC
 
@@ -166,6 +170,414 @@ mvvm 主要解决
 1. mvc 只是静态渲染，更新还要依赖于操作 DOM，使页面渲染性能降低，加载速度变慢，影响用户体验。
 
 2. 当 Model 频繁发生变化，开发者需要主动更新到 View 。
+
+## **响应式原理**
+
+Vue 在初始化数据时，会给 data 中的属性使用 Object.defineProperty 重新定义所有属性,当页面取到对应属性时。会进行依赖收集（收集当前组件的 watcher） 如果属性发生变化会通知相关依赖进行更新操作
+
+Vue 是通过数据劫持配合发布者-订阅者模式的方式，通过 Object.defineProperty()来劫持各个属性的 setter 和 getter，在数据变动时，发布消息给依赖收集器，去通知观察者，做出对应的回调函数，去更新视图
+
+MVVM 作为绑定的入口，整合 Observer，Compile 和 Watcher 三者
+
+1. `Observer` 对数据的属性进行递归遍历，监听 Model 数据变化，使用 `Object.defineProperty` 进行数据劫持。
+2. `Compile` 将模板编译为渲染函数，并渲染视图页面
+   1. `parse` 使用正则等方式解析 `template` 中的指令，`class`，`style` 等数据，生成 `AST`（抽象语法树）
+   2. `optimize` 进行优化，标记静态节点，该节点会跳过 `diff`
+   3. `generate`，把 `AST` 转化为渲染函数，渲染函数用于生成虚拟 `DOM`
+3. `Watcher` 是 `Observer` 和 `Compiler` 之间通信的桥梁
+   1. 自身实例化的时候，调用 `getter` 函数，向 `deps` 添加 `watch`
+   2. 当数据修改时，调用 `setter` 函数，调用 `deps.notify`，执行 `watch` 的 `update` 函数
+   3. 执行 `watch` 的 `update` 函数，重新生成虚拟 `DOM`，并进行 `Diff` 对页面进行修改
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <h2>{{person.name}} -- {{person.age}}</h2>
+      <h3>{{person.fav}}</h3>
+      <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+      </ul>
+      <h3>{{msg}}</h3>
+      <div v-text="msg"></div>
+      <div v-text="person.name"></div>
+      <div v-html="htmlStr"></div>
+      <input type="text" v-model="msg" />
+      <button v-on:click="handleClick">v-on</button>
+      <button @click="handleClick">@</button>
+      <img v-bind:src="img" v-bind:title="title" />
+    </div>
+    <script src="./Observer.js"></script>
+    <script src="./myVue.js"></script>
+    <script>
+      let vm = new myVue({
+        el: '##app',
+        data: {
+          person: {
+            name: 'zzf',
+            age: 24,
+            fav: 'cjl',
+          },
+          msg: 'data中的msg',
+          htmlStr: '<h2>gogogo</h2>',
+          img: './test.png',
+          title: '我是百度',
+        },
+        methods: {
+          handleClick() {
+            this.person.name = 'jeffrey';
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
+```
+
+```js
+const compileUtil = {
+  getVal(expr, vm) {
+    return expr.split('.').reduce((data, cur) => data[cur], vm.$data);
+  },
+  setVal(expr, vm, inputVal) {
+    expr.split('.').reduce((data, cur) => {
+      data[cur] = inputVal;
+    }, vm.$data);
+  },
+  getContentVal(expr, vm) {
+    return expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
+      return this.getVal(args[1], vm);
+    });
+  },
+  text(node, expr, vm) {
+    let value;
+    if (expr.indexOf('{{') !== -1) {
+      value = expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
+        //绑定观察者，将来数据发生变化，触发这里的回调，进行更新
+        new Watcher(vm, args[1], () => {
+          this.updater.textUpdater(node, this.getContentVal(expr, vm));
+        });
+        return this.getVal(args[1], vm);
+      });
+    } else {
+      value = this.getVal(expr, vm);
+      new Watcher(vm, expr, (newVal) => {
+        this.updater.textUpdater(node, newVal);
+      });
+    }
+    this.updater.textUpdater(node, value);
+  },
+  html(node, expr, vm) {
+    const value = this.getVal(expr, vm);
+    new Watcher(vm, expr, (newVal) => {
+      this.updater.htmlUpdater(node, newVal);
+    });
+    this.updater.htmlUpdater(node, value);
+  },
+  model(node, expr, vm) {
+    const value = this.getVal(expr, vm);
+    //绑定更新函数 数据=>视图
+    new Watcher(vm, expr, (newVal) => {
+      this.updater.modelUpdater(node, newVal);
+    });
+    //视图=>数据=>视图
+    node.addEventListener('input', (e) => {
+      //设置值
+      this.setVal(expr, vm, e.target.value);
+    });
+    this.updater.modelUpdater(node, value);
+  },
+  on(node, expr, vm, eventName) {
+    let fn = vm.$options.methods && vm.$options.methods[expr];
+    node.addEventListener(eventName, fn.bind(vm), false);
+  },
+  bind(node, expr, vm, eventName) {
+    const value = this.getVal(expr, vm);
+    node[eventName] = value;
+  },
+  //更新的函数
+  updater: {
+    modelUpdater(node, value) {
+      node.value = value;
+    },
+    textUpdater(node, value) {
+      node.textContent = value;
+    },
+    htmlUpdater(node, value) {
+      node.innerHTML = value;
+    },
+  },
+};
+
+class Compile {
+  constructor(el, vm) {
+    this.el = this.isElementNode(el) ? el : document.querySelector(el);
+    this.vm = vm;
+    //1.获取文档碎片对象 放入内存中会减少页面的回流和重绘
+    const fragment = this.node2Fragment(this.el);
+
+    //2. 编译模板
+    this.compile(fragment);
+
+    //3. 追加子元素到根元素
+    this.el.appendChild(fragment);
+  }
+  isElementNode(node) {
+    return node.nodeType === 1;
+  }
+  node2Fragment(el) {
+    //创建文档碎片
+    const fragment = document.createDocumentFragment();
+    let child;
+    while ((child = el.firstChild)) {
+      fragment.appendChild(child);
+    }
+    return fragment;
+  }
+  compile(fragment) {
+    const childNodes = fragment.childNodes;
+    [...childNodes].forEach((child) => {
+      if (this.isElementNode(child)) {
+        this.compileElement(child);
+      } else {
+        this.compileText(child);
+      }
+      if (child.childNodes && child.childNodes.length) {
+        this.compile(child);
+      }
+    });
+  }
+  compileElement(node) {
+    const attributes = node.attributes;
+    [...attributes].forEach((attr) => {
+      const { name, value } = attr;
+      if (this.isDirective(name)) {
+        const [, directive] = name.split('-');
+        const [dirName, eventName] = directive.split(':');
+        //更新数据，数据驱动视图
+        compileUtil[dirName](node, value, this.vm, eventName);
+        //删除有指令的标签上的属性
+        node.removeAttribute('v-' + directive);
+      } else if (this.isEventName(name)) {
+        let [, eventName] = name.split('@');
+        compileUtil['on'](node, value, this.vm, eventName);
+      }
+    });
+  }
+  isEventName(attrName) {
+    return attrName.startsWith('@');
+  }
+  isDirective(attrName) {
+    return attrName.startsWith('v-');
+  }
+  compileText(node) {
+    //{{}}
+    const content = node.textContent;
+    if (/\{\{(.+?)\}\}/g.test(content)) {
+      compileUtil['text'](node, content, this.vm);
+    }
+  }
+}
+
+class myVue {
+  constructor(options) {
+    this.$el = options.el;
+    this.$data = options.data;
+    this.$options = options;
+    if (this.$el) {
+      //1.实现一个数据观察者
+      new Observer(this.$data);
+      //2.实现一个指令解析器
+      new Compile(this.$el, this);
+      this.proxyData(this.$data);
+    }
+  }
+  proxyData(data) {
+    for (const key in data) {
+      Object.defineProperty(this, key, {
+        get() {
+          return data[key];
+        },
+        set(newVal) {
+          data[key] = newVal;
+        },
+      });
+    }
+  }
+}
+```
+
+```js
+class Watcher {
+  constructor(vm, expr, cb) {
+    this.vm = vm;
+    this.expr = expr;
+    this.cb = cb;
+    //先把旧值保存起来
+    this.oldVal = this.getOldVal();
+  }
+  getOldVal() {
+    Dep.target = this;
+    const oldVal = compileUtil.getVal(this.expr, this.vm);
+    Dep.target = null;
+    return oldVal;
+  }
+  update() {
+    const newVal = compileUtil.getVal(this.expr, this.vm);
+    if (newVal !== this.oldVal) {
+      this.cb(newVal);
+    }
+  }
+}
+
+//依赖收集器
+class Dep {
+  constructor() {
+    this.subs = [];
+  }
+  //收集观察者
+  addSub(watcher) {
+    this.subs.push(watcher);
+  }
+  //通知观察者去更新
+  notify() {
+    this.subs.forEach((w) => w.update());
+  }
+}
+
+class Observer {
+  constructor(data) {
+    this.observe(data);
+  }
+  observe(data) {
+    if (data && typeof data === 'object') {
+      Object.keys(data).forEach((key) => {
+        this.defineReacive(data, key, data[key]);
+      });
+    }
+  }
+  defineReacive(obj, key, value) {
+    //递归遍历
+    this.observe(value);
+    const dep = new Dep();
+    //劫持并监听所有的属性
+    Object.defineProperty(obj, key, {
+      enumerable: true,
+      configurable: false,
+      get() {
+        //订阅数据变化时，往Dep中添加观察者
+        Dep.target && dep.addSub(Dep.target);
+        return value;
+      },
+      set: (newVal) => {
+        this.observe(newVal);
+        if (newVal !== value) {
+          value = newVal;
+        }
+        //告诉Dep通知变化
+        dep.notify();
+      },
+    });
+  }
+}
+```
+
+[观察者和发布订阅模式的区别](https://www.cnblogs.com/viaiu/p/9939301.html)
+
+### Vue 监听数组变化
+
+1. 首先，使用函数劫持的方式，重写了数组的方法
+2. Vue 将 data 中的数组，进行了原型链重写。指向了自己定义的数组原型方法，这样当调用数组 api 时，就可以通知依赖更新。如果数组中包含着引用类型，会对数组中的引用类型再次进行观测
+
+### Proxy 与 Object.defineProperty 对比
+
+`Object.defineProperty` 虽然已经能够实现双向绑定了，但是他还是有缺陷的。
+
+1. 只能对属性进行数据劫持，所以需要深度遍历整个对象
+2. 对于数组不能监听到数据的变化
+
+虽然 Vue 中确实能检测到数组数据的变化，但是其实是使用了 hack 的办法，并且也是有缺陷的。
+
+```js
+const arrayProto = Array.prototype;
+export const arrayMethods = Object.create(arrayProto);
+// hack 以下几个函数
+const methodsToPatch = [
+  'push',
+  'pop',
+  'shift',
+  'unshift',
+  'splice',
+  'sort',
+  'reverse',
+];
+methodsToPatch.forEach(function(method) {
+  // 获得原生函数
+  const original = arrayProto[method];
+  def(arrayMethods, method, function mutator(...args) {
+    // 调用原生函数
+    const result = original.apply(this, args);
+    const ob = this.__ob__;
+    let inserted;
+    switch (method) {
+      case 'push':
+      case 'unshift':
+        inserted = args;
+        break;
+      case 'splice':
+        inserted = args.slice(2);
+        break;
+    }
+    if (inserted) ob.observeArray(inserted);
+    // 触发更新
+    ob.dep.notify();
+    return result;
+  });
+});
+```
+
+反观 Proxy 就没以上的问题，原生支持监听数组变化，并且可以直接对整个对象进行拦截，所以 Vue 也将在下个大版本中使用 Proxy 替换 Object.defineProperty
+
+```js
+let onWatch = (obj, setBind, getLogger) => {
+  let handler = {
+    GET(target, property, receiver) {
+      getLogger(target, property);
+      return Reflect.GET(target, property, receiver);
+    },
+    set(target, property, value, receiver) {
+      setBind(value);
+      return Reflect.set(target, property, value);
+    },
+  };
+  return new Proxy(obj, handler);
+};
+
+let obj = { a: 1 };
+let value;
+let p = onWatch(
+  obj,
+  (v) => {
+    value = v;
+  },
+  (target, property) => {
+    console.log(`GET '${property}' = ${target[property]}`);
+  }
+);
+p.a = 2; // bind `value` to `2`
+p.a; // -> GET 'a' = 2
+```
+
+Proxy 兼容性不好，且无法 polyfill
+Object.defineProperty 深度监听，需要递归到底，一次性计算量大
 
 ## **路由原理**
 
@@ -505,415 +917,6 @@ v-if 控制元素是否渲染到页面
 v-show 元素已经渲染到了页面，通过 CSS display 属性控制显示和隐藏
 
 频繁切换显示状态用 v-show，否则用 v-if
-
-## **Vue 响应式**
-
-![](//assets/img/双向数据绑定.png)
-
-Vue 是通过数据劫持配合发布者-订阅者模式的方式，通过 Object.defineProperty()来劫持各个属性的 setter 和 getter，在数据变动时，发布消息给依赖收集器，去通知观察者，做出对应的回调函数，去更新视图
-
-MVVM 作为绑定的入口，整合 Observer，Compile 和 Watcher 三者
-
-1. `Observer` 对数据的属性进行递归遍历，监听 Model 数据变化，使用 `Object.defineProperty` 进行数据劫持。
-2. `Compile` 将模板编译为渲染函数，并渲染视图页面
-   1. `parse` 使用正则等方式解析 `template` 中的指令，`class`，`style` 等数据，生成 `AST`（抽象语法树）
-   2. `optimize` 进行优化，标记静态节点，该节点会跳过 `diff`
-   3. `generate`，把 `AST` 转化为渲染函数，渲染函数用于生成虚拟 `DOM`
-3. `Watcher` 是 `Observer` 和 `Compiler` 之间通信的桥梁
-   1. 自身实例化的时候，调用 `getter` 函数，向 `deps` 添加 `watch`
-   2. 当数据修改时，调用 `setter` 函数，调用 `deps.notify`，执行 `watch` 的 `update` 函数
-   3. 执行 `watch` 的 `update` 函数，重新生成虚拟 `DOM`，并进行 `Diff` 对页面进行修改
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <div id="app">
-      <h2>{{person.name}} -- {{person.age}}</h2>
-      <h3>{{person.fav}}</h3>
-      <ul>
-        <li>1</li>
-        <li>2</li>
-        <li>3</li>
-      </ul>
-      <h3>{{msg}}</h3>
-      <div v-text="msg"></div>
-      <div v-text="person.name"></div>
-      <div v-html="htmlStr"></div>
-      <input type="text" v-model="msg" />
-      <button v-on:click="handleClick">v-on</button>
-      <button @click="handleClick">@</button>
-      <img v-bind:src="img" v-bind:title="title" />
-    </div>
-    <script src="./Observer.js"></script>
-    <script src="./myVue.js"></script>
-    <script>
-      let vm = new myVue({
-        el: '##app',
-        data: {
-          person: {
-            name: 'zzf',
-            age: 24,
-            fav: 'cjl',
-          },
-          msg: 'data中的msg',
-          htmlStr: '<h2>gogogo</h2>',
-          img: './test.png',
-          title: '我是百度',
-        },
-        methods: {
-          handleClick() {
-            this.person.name = 'jeffrey';
-          },
-        },
-      });
-    </script>
-  </body>
-</html>
-```
-
-```js
-const compileUtil = {
-  getVal(expr, vm) {
-    return expr.split('.').reduce((data, cur) => data[cur], vm.$data);
-  },
-  setVal(expr, vm, inputVal) {
-    expr.split('.').reduce((data, cur) => {
-      data[cur] = inputVal;
-    }, vm.$data);
-  },
-  getContentVal(expr, vm) {
-    return expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
-      return this.getVal(args[1], vm);
-    });
-  },
-  text(node, expr, vm) {
-    let value;
-    if (expr.indexOf('{{') !== -1) {
-      value = expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
-        //绑定观察者，将来数据发生变化，触发这里的回调，进行更新
-        new Watcher(vm, args[1], () => {
-          this.updater.textUpdater(node, this.getContentVal(expr, vm));
-        });
-        return this.getVal(args[1], vm);
-      });
-    } else {
-      value = this.getVal(expr, vm);
-      new Watcher(vm, expr, (newVal) => {
-        this.updater.textUpdater(node, newVal);
-      });
-    }
-    this.updater.textUpdater(node, value);
-  },
-  html(node, expr, vm) {
-    const value = this.getVal(expr, vm);
-    new Watcher(vm, expr, (newVal) => {
-      this.updater.htmlUpdater(node, newVal);
-    });
-    this.updater.htmlUpdater(node, value);
-  },
-  model(node, expr, vm) {
-    const value = this.getVal(expr, vm);
-    //绑定更新函数 数据=>视图
-    new Watcher(vm, expr, (newVal) => {
-      this.updater.modelUpdater(node, newVal);
-    });
-    //视图=>数据=>视图
-    node.addEventListener('input', (e) => {
-      //设置值
-      this.setVal(expr, vm, e.target.value);
-    });
-    this.updater.modelUpdater(node, value);
-  },
-  on(node, expr, vm, eventName) {
-    let fn = vm.$options.methods && vm.$options.methods[expr];
-    node.addEventListener(eventName, fn.bind(vm), false);
-  },
-  bind(node, expr, vm, eventName) {
-    const value = this.getVal(expr, vm);
-    node[eventName] = value;
-  },
-  //更新的函数
-  updater: {
-    modelUpdater(node, value) {
-      node.value = value;
-    },
-    textUpdater(node, value) {
-      node.textContent = value;
-    },
-    htmlUpdater(node, value) {
-      node.innerHTML = value;
-    },
-  },
-};
-
-class Compile {
-  constructor(el, vm) {
-    this.el = this.isElementNode(el) ? el : document.querySelector(el);
-    this.vm = vm;
-    //1.获取文档碎片对象 放入内存中会减少页面的回流和重绘
-    const fragment = this.node2Fragment(this.el);
-
-    //2. 编译模板
-    this.compile(fragment);
-
-    //3. 追加子元素到根元素
-    this.el.appendChild(fragment);
-  }
-  isElementNode(node) {
-    return node.nodeType === 1;
-  }
-  node2Fragment(el) {
-    //创建文档碎片
-    const fragment = document.createDocumentFragment();
-    let child;
-    while ((child = el.firstChild)) {
-      fragment.appendChild(child);
-    }
-    return fragment;
-  }
-  compile(fragment) {
-    const childNodes = fragment.childNodes;
-    [...childNodes].forEach((child) => {
-      if (this.isElementNode(child)) {
-        this.compileElement(child);
-      } else {
-        this.compileText(child);
-      }
-      if (child.childNodes && child.childNodes.length) {
-        this.compile(child);
-      }
-    });
-  }
-  compileElement(node) {
-    const attributes = node.attributes;
-    [...attributes].forEach((attr) => {
-      const { name, value } = attr;
-      if (this.isDirective(name)) {
-        const [, directive] = name.split('-');
-        const [dirName, eventName] = directive.split(':');
-        //更新数据，数据驱动视图
-        compileUtil[dirName](node, value, this.vm, eventName);
-        //删除有指令的标签上的属性
-        node.removeAttribute('v-' + directive);
-      } else if (this.isEventName(name)) {
-        let [, eventName] = name.split('@');
-        compileUtil['on'](node, value, this.vm, eventName);
-      }
-    });
-  }
-  isEventName(attrName) {
-    return attrName.startsWith('@');
-  }
-  isDirective(attrName) {
-    return attrName.startsWith('v-');
-  }
-  compileText(node) {
-    //{{}}
-    const content = node.textContent;
-    if (/\{\{(.+?)\}\}/g.test(content)) {
-      compileUtil['text'](node, content, this.vm);
-    }
-  }
-}
-
-class myVue {
-  constructor(options) {
-    this.$el = options.el;
-    this.$data = options.data;
-    this.$options = options;
-    if (this.$el) {
-      //1.实现一个数据观察者
-      new Observer(this.$data);
-      //2.实现一个指令解析器
-      new Compile(this.$el, this);
-      this.proxyData(this.$data);
-    }
-  }
-  proxyData(data) {
-    for (const key in data) {
-      Object.defineProperty(this, key, {
-        get() {
-          return data[key];
-        },
-        set(newVal) {
-          data[key] = newVal;
-        },
-      });
-    }
-  }
-}
-```
-
-```js
-class Watcher {
-  constructor(vm, expr, cb) {
-    this.vm = vm;
-    this.expr = expr;
-    this.cb = cb;
-    //先把旧值保存起来
-    this.oldVal = this.getOldVal();
-  }
-  getOldVal() {
-    Dep.target = this;
-    const oldVal = compileUtil.getVal(this.expr, this.vm);
-    Dep.target = null;
-    return oldVal;
-  }
-  update() {
-    const newVal = compileUtil.getVal(this.expr, this.vm);
-    if (newVal !== this.oldVal) {
-      this.cb(newVal);
-    }
-  }
-}
-
-//依赖收集器
-class Dep {
-  constructor() {
-    this.subs = [];
-  }
-  //收集观察者
-  addSub(watcher) {
-    this.subs.push(watcher);
-  }
-  //通知观察者去更新
-  notify() {
-    this.subs.forEach((w) => w.update());
-  }
-}
-
-class Observer {
-  constructor(data) {
-    this.observe(data);
-  }
-  observe(data) {
-    if (data && typeof data === 'object') {
-      Object.keys(data).forEach((key) => {
-        this.defineReacive(data, key, data[key]);
-      });
-    }
-  }
-  defineReacive(obj, key, value) {
-    //递归遍历
-    this.observe(value);
-    const dep = new Dep();
-    //劫持并监听所有的属性
-    Object.defineProperty(obj, key, {
-      enumerable: true,
-      configurable: false,
-      get() {
-        //订阅数据变化时，往Dep中添加观察者
-        Dep.target && dep.addSub(Dep.target);
-        return value;
-      },
-      set: (newVal) => {
-        this.observe(newVal);
-        if (newVal !== value) {
-          value = newVal;
-        }
-        //告诉Dep通知变化
-        dep.notify();
-      },
-    });
-  }
-}
-```
-
-[观察者和发布订阅模式的区别](https://www.cnblogs.com/viaiu/p/9939301.html)
-
-### Vue 监听数组变化
-
-1. Object.defineProperty()不能监听数组变化
-2. 重新定义原型，重写 push pop 方法，实现监听
-3. Proxy 可以原生支持监听数组变化
-
-### Proxy 与 Object.defineProperty 对比
-
-`Object.defineProperty` 虽然已经能够实现双向绑定了，但是他还是有缺陷的。
-
-1. 只能对属性进行数据劫持，所以需要深度遍历整个对象
-2. 对于数组不能监听到数据的变化
-
-虽然 Vue 中确实能检测到数组数据的变化，但是其实是使用了 hack 的办法，并且也是有缺陷的。
-
-```js
-const arrayProto = Array.prototype;
-export const arrayMethods = Object.create(arrayProto);
-// hack 以下几个函数
-const methodsToPatch = [
-  'push',
-  'pop',
-  'shift',
-  'unshift',
-  'splice',
-  'sort',
-  'reverse',
-];
-methodsToPatch.forEach(function(method) {
-  // 获得原生函数
-  const original = arrayProto[method];
-  def(arrayMethods, method, function mutator(...args) {
-    // 调用原生函数
-    const result = original.apply(this, args);
-    const ob = this.__ob__;
-    let inserted;
-    switch (method) {
-      case 'push':
-      case 'unshift':
-        inserted = args;
-        break;
-      case 'splice':
-        inserted = args.slice(2);
-        break;
-    }
-    if (inserted) ob.observeArray(inserted);
-    // 触发更新
-    ob.dep.notify();
-    return result;
-  });
-});
-```
-
-反观 Proxy 就没以上的问题，原生支持监听数组变化，并且可以直接对整个对象进行拦截，所以 Vue 也将在下个大版本中使用 Proxy 替换 Object.defineProperty
-
-```js
-let onWatch = (obj, setBind, getLogger) => {
-  let handler = {
-    GET(target, property, receiver) {
-      getLogger(target, property);
-      return Reflect.GET(target, property, receiver);
-    },
-    set(target, property, value, receiver) {
-      setBind(value);
-      return Reflect.set(target, property, value);
-    },
-  };
-  return new Proxy(obj, handler);
-};
-
-let obj = { a: 1 };
-let value;
-let p = onWatch(
-  obj,
-  (v) => {
-    value = v;
-  },
-  (target, property) => {
-    console.log(`GET '${property}' = ${target[property]}`);
-  }
-);
-p.a = 2; // bind `value` to `2`
-p.a; // -> GET 'a' = 2
-```
-
-Proxy 兼容性不好，且无法 polyfill
-Object.defineProperty 深度监听，需要递归到底，一次性计算量大
 
 ## **Vue 组件**
 

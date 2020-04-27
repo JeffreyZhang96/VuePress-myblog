@@ -1,3 +1,6 @@
+---
+title: React
+---
 
 [新手学习 react 迷惑的点(一)](https://segmentfault.com/a/1190000020268043)
 

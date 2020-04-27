@@ -87,8 +87,6 @@ Cat('haha');
 
 ## **数据类型**
 
-### JS 变量类型
-
 JS 中有 7 种原始值，分别是：
 
 1. `boolean`
@@ -96,7 +94,7 @@ JS 中有 7 种原始值，分别是：
 3. `string`
 4. `undefined`
 5. `symbol`[理解和使用 ES6 中的 Symbol](https://www.jianshu.com/p/f40a77bbd74e)
-6. `null`
+6. `null` 主要用于赋值给一些可能会返回对象的变量，作为初始化
 7. `bigInt`
 
 引用类型：
@@ -105,8 +103,9 @@ JS 中有 7 种原始值，分别是：
 2. 数组 `Array`
 3. 函数 `Function`
 
-两种类型间的主要区别是它们的存储位置不同，基本数据类型的值直接保存在栈中，而引用数据类型的值保存在堆中，通过使用在栈中
-保存对应的指针来获取堆中的值
+原始数据类型直接存储在栈（stack）中的简单数据段，占据空间小、大小固定，属于被频繁使用数据，所以放入栈中存储。
+
+引用数据类型存储在堆（heap）中的对象，占据空间大、大小不固定。如果存储在栈中，将会影响程序运行的性能；引用数据类型在栈中存储了指针，该指针指向堆中该实体的起始地址。当解释器寻找引用值时，会首先检索其在栈中的地址，取得地址后从堆中获得实体。
 
 虽然 typeof null 会输出 object，但是这只是 JS 存在的一个悠久 Bug。在 JS 的最初版本中使用的是 32 位系统，为了性能考虑使用低位存储变量的类型信息，000 开头代表是对象然而 null 表示为全零，所以将它错误的判断为 object
 
@@ -223,6 +222,12 @@ BigInt 可以正常地进行位运算，如|、&、<<、>>和^
  准确。
 ```
 
+#### undefined 与 undeclared 的区别
+
+已在作用域中声明但还没有赋值的变量，是 undefined 的。相反，还没有在作用域中声明过的变量，是 undeclared 的。
+
+对于 undeclared 变量的引用，浏览器会报引用错误，如 ReferenceError: b is not defined 。但是我们可以使用 typeof 的安全防范机制来避免报错，因为对于 undeclared（或者 not defined ）变量，typeof 会返回 "undefined"。
+
 ### 类型转换
 
 #### ToString
@@ -303,18 +308,7 @@ function is(x, y) {
 
 ## **引用类型**
 
-### [[class]]
-
-所有 typeof 返回值为 "object" 的对象（如数组）都包含一个内部属性 [[Class]]（我们可以把它看作一个内部的分类，而非
-传统的面向对象意义上的类）。这个属性无法直接访问，一般通过 Object.prototype.toString(..) 来查看。例如：
-
-```js
-Object.prototype.toString.call([1, 2, 3]);
-// "[object Array]"
-
-Object.prototype.toString.call(/regex-literal/i);
-// "[object RegExp]"
-```
+[JavaScript 标准内置对象](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects)
 
 ### String
 
@@ -656,11 +650,42 @@ this 永远指向最后调用它的那个对象
 
 如果 call、apply、bind 接收到的第一个参数是空或者 null、undefined 的话，则会忽略这个参数
 
-调用定时器的始终是 window
-
 匿名函数的 this 永远指向 window
 
 它里面的 this 是由外层作用域来决定的，且指向函数定义时的 this 而非执行时。箭头函数中没有 this 绑定，必须通过查找作用域链来决定其值，如果箭头函数被非箭头函数包含，则 this 绑定的是最近一层非箭头函数的 this，否则，this 为 undefined。
+
+#### 调用定时器的始终是 window
+
+setTimeout()调用的代码运行在与所在函数完全分离的执行环境上。这会导致这些代码中包含的 this 关键字会指向 window (或全局)对象
+解决方法：
+
+1.使用局部变量：
+
+```js
+var self = this;
+setTimeout(function() {
+  console.log('Hi, my name is ' + self.name);
+}, time);
+```
+
+2.使用箭头函数
+
+```js
+setTimeout(() => {
+  console.log('Hi, my name is ' + this.name);
+}, time);
+```
+
+3.bind 函数
+
+```js
+setTimeout(
+  function() {
+    console.log('hi,my name is' + this.name);
+  }.bind(this),
+  1000
+);
+```
 
 #### 隐式绑定丢失
 
@@ -677,7 +702,7 @@ this 永远指向最后调用它的那个对象
 
 构造函数调用>call,apply,bind 函数>方法调用模式>函数调用模式
 
-箭头函数的 this 一旦被绑定，就不会再被任何方式所改变。
+new 绑定>显式绑定>隐式绑定>默认绑定
 
 ### this 指向
 
@@ -1237,13 +1262,9 @@ function getStyle(obj, attr) {
 
 ## **原型与原型链**
 
-JavaScript 是使用构造函数来新建一个对象的，每一个构造函数的内部都有一个 prototype 属性值，这个属性值是一个对
-象，这个对象包含了该构造函数的所有实例共享的属性和方法。当我们使用构造函数新建一个对象后，在这个对象的内部
-将包含一个 proto 属性，这个属性指向构造函数的 prototype。
+JavaScript 是使用构造函数来新建一个对象的，每一个构造函数的内部都有一个 prototype 属性值，这个属性值是一个对象，这个对象包含了该构造函数的所有实例共享的属性和方法。当我们使用构造函数新建一个对象后，在这个对象的内部将包含一个 proto 指针，这个指针指向构造函数的 prototype。
 
-当我们访问一个对象的属性时，如果这个对象内部不存在这个属性，那么它就会去它的原型对象里找这个属性，这个原型对象又
-会有自己的原型，于是就这样一直找下去，也就是原型链的概念。原型链的尽头一般来说都是 Object.prototype 所以这就
-是我们新建的对象为什么能够使用 toString() 等方法的原因。
+当我们访问一个对象的属性时，如果这个对象内部不存在这个属性，那么它就会去它的原型对象里找这个属性，这个原型对象又会有自己的原型，于是就这样一直找下去，也就是原型链的概念
 
 [帮你彻底搞懂 JS 中的 prototype、proto 与 constructor（图解](https://blog.csdn.net/cc18868876837/article/details/81211729)
 
@@ -2221,3 +2242,19 @@ class events {
   }
 }
 ```
+
+## **基本规范**
+
+1. 一个函数作用域中所有的变量声明应该尽量提到函数首部，用一个 var 声明，不允许出现两个连续的 var 声明，声明时如果变量没有值，应该给该变量赋值对应类型的初始值，便于他人阅读代码时，能够一目了然的知道变量对应的类型值。
+
+2. 代码中出现地址、时间等字符串时需要使用常量代替。
+
+3. 在进行比较的时候，尽量使用'===', '!=='代替'==', '!='。
+
+4. 不要在内置对象的原型上添加方法，如 Array, Date。
+
+5. switch 语句必须带有 default 分支。
+
+6. for 循环必须使用大括号。
+
+7. if 语句必须使用大括号。

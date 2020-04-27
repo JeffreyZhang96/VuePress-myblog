@@ -633,24 +633,40 @@ var reverseLeftWords = function(s, k) {
 
 > 滑动窗口
 
+时间复杂度：O(n^2)
+
+空间复杂度：O(n)
+
 ```js
 var lengthOfLongestSubstring = function(s) {
-  let m = '';
-  let num = 0;
-  let max = 0;
-  for (let n of s) {
-    let index = m.indexOf(n);
-    if (index === -1) {
-      m += n;
-      num++;
-      max = Math.max(max, num);
-    } else {
-      m += n;
-      m = m.slice(index + 1);
-      num = m.length;
+  let arr = [],
+    max = 0;
+  for (let item of s) {
+    let index = arr.indexOf(item);
+    arr.push(item);
+    if (index !== -1) {
+      arr = arr.slice(index + 1);
     }
+    max = Math.max(max, arr.length);
   }
-  return max > m.length ? max : m.length;
+  return max;
+};
+```
+
+> Map
+
+```js
+var lengthOfLongestSubstring = function(s) {
+  let map = new Map(),
+    max = 0;
+  for (let i = 0, j = 0; j < s.length; j++) {
+    if (map.has(s[j])) {
+      i = Math.max(map.get(s[j]) + 1, i);
+    }
+    max = Math.max(max, j - i + 1);
+    map.set(s[j], j);
+  }
+  return max;
 };
 ```
 
@@ -701,8 +717,6 @@ var longestCommonPrefix = function(strs) {
 
 ### 有效的括号 lc20
 
-给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串，判断字符串是否有效。
-
 > stack
 
 ```js
@@ -720,7 +734,7 @@ var isValid = function(s) {
       if (obj[stack.pop()] !== i) return false;
     }
   }
-  return stack.length === 0 ? true : false;
+  return stack.length ? false : true;
 };
 ```
 
@@ -924,6 +938,48 @@ var countCharacters = function(words, chars) {
     }
   }
   return res;
+};
+```
+
+### 删除字符串中的所有相邻重复项
+
+```js
+var removeDuplicates = function(S) {
+  if (S.length <= 1) return S;
+  let arr = S.split('');
+  let left = 0;
+  let right = 1;
+  while (right < arr.length) {
+    if (arr[left] === arr[right] && left == 0) {
+      arr.splice(left, 2);
+    } else if (arr[left] === arr[right]) {
+      arr.splice(left, 2);
+      left--;
+      right--;
+    } else {
+      left++;
+      right++;
+    }
+  }
+  return arr.join('');
+};
+```
+
+> stack
+
+```js
+var removeDuplicates = function(S) {
+  let stack = [];
+  for (let i of S) {
+    if (!stack.length) {
+      stack.push(i);
+    } else if (i === stack[stack.length - 1]) {
+      stack.pop();
+    } else {
+      stack.push(i);
+    }
+  }
+  return stack.join('');
 };
 ```
 
@@ -2526,6 +2582,56 @@ var validateStackSequences = function(pushed, popped) {
 };
 ```
 
+### 最小栈
+
+```js
+var MinStack = function() {
+  this.items = [];
+  this.min = null;
+};
+MinStack.prototype.push = function(x) {
+  if (!this.items.length) this.min = x;
+  this.min = Math.min(x, this.min);
+  this.items.push(x);
+};
+MinStack.prototype.pop = function() {
+  let num = this.items.pop();
+  this.min = Math.min(...this.items);
+  return num;
+};
+MinStack.prototype.top = function() {
+  if (!this.items.length) return null;
+  return this.items[this.items.length - 1];
+};
+MinStack.prototype.getMin = function() {
+  return this.min;
+};
+```
+
+```js
+var MinStack = function() {
+  this.stack = [];
+  this.minStack = [];
+};
+MinStack.prototype.push = function(x) {
+  this.stack.push(x);
+  if (this.minStack[this.minStack.length - 1] >= x || !this.minStack.length) {
+    this.minStack.push(x);
+  }
+};
+MinStack.prototype.pop = function() {
+  if (this.stack.pop() == this.minStack[this.minStack.length - 1]) {
+    this.minStack.pop();
+  }
+};
+MinStack.prototype.top = function() {
+  return this.stack[this.stack.length - 1];
+};
+MinStack.prototype.getMin = function() {
+  return this.minStack[this.minStack.length - 1];
+};
+```
+
 ### 每日温度 lc739
 
 ```js
@@ -3359,9 +3465,6 @@ var fib = function(n) {
 };
 ```
 
-1. 只是适用于 n 比较小的时候，否则效率低，因为会做很多次重复操作
-2. 而且该例递归属于多分支递归，容易造成栈溢出
-
 > 递归(尾调用优化)
 
 ```js
@@ -3372,22 +3475,44 @@ var fib = function(n, n0 = 0, n1 = 1) {
 };
 ```
 
-不会发生栈溢出
-
-> 非递归
+> 记忆化递归
 
 ```js
 var fib = function(n) {
-  if (n < 2) {
-    return n;
+  let arr = [0, 1];
+  for (let i = 2; i <= n; i++) {
+    arr[i] = (arr[i - 1] + arr[i - 2]) % (1e9 + 7);
   }
-  let ac1 = 1,
-    ac2 = 1;
-  for (let i = 2; i < n; i++) {
-    //解构赋值，代码更简洁
-    [ac1, ac2] = [ac2, (ac1 + ac2) % (1e9 + 7)];
+  return arr[n];
+};
+```
+
+> 动态规划
+
+```js
+var fib = function(n) {
+  let a = 0,
+    b = 1,
+    sum;
+  while (n--) {
+    sum = (a + b) % (1e9 + 7);
+    a = b;
+    b = sum;
   }
-  return ac2;
+  return a;
+};
+```
+
+> 动态规划（数组解构）
+
+```js
+var fib = function(n) {
+  let a = 0,
+    b = 1;
+  while (n--) {
+    [a, b] = [b, (a + b) % (1e9 + 7)];
+  }
+  return a;
 };
 ```
 
