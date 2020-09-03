@@ -2,6 +2,8 @@
 title: 浏览器
 ---
 
+[(1.6w 字)浏览器灵魂之问，请问你能接得住几个？](https://juejin.im/post/6844904021308735502#heading-24)
+
 ## **内核**
 
 ### 浏览器内核的理解
@@ -105,70 +107,74 @@ trident 内核 （ie 浏览器） -ms
 - 负责执行异步请求一类的函数的线程，如： Promise，axios，ajax 等。
 - 主线程依次执行代码时，遇到异步请求，会将函数交给该线程处理，当监听到状态码变更，如果有回调函数，事件触发线程会将回调函数加入到任务队列的尾部，等待 JS 引擎线程执行。
 
+## **V8 引擎**
+
+[认识 V8 引擎](https://zhuanlan.zhihu.com/p/27628685)
+
+V8 是使用 C++ 编写的高性能 JavaScript 和 WebAssembly 引擎
+
+V8 的发布周期：
+大约每隔六周，就会有一个新的 V8 版本推出
+V8 版本与 Chrome 版本对应，如 V8 v7.8 对应 Chrome 78
+
+V8 的竞品：
+Chakra（前 Edge JavaScript 引擎）
+JavaScript Core（Safari）
+SpiderMonkey（Firefox）
+
+V8 的重要部件：
+Ignition（基线编译器）
+TurboFan（优化编译器）
+Orinoco（垃圾回收器）
+Liftoff（WebAssembly 基线编译器）
+
 ## **从输入 URL 到页面加载完成的过程**
 
-1. 在浏览器地址栏输入 URL
-2. 浏览器查看缓存，如果请求资源在缓存中并且没过期，跳转到转码步骤
+### 网络请求
 
-   1. 如果资源未缓存，发起新请求
-   2. 如果已缓存，检验是否过期，没过期直接提供给客户端，否则与服务器进行验证。
-   3. 检验新鲜通常有两个 HTTP 头进行控制 Expires 和 Cache-Control：
-      - HTTP1.0 提供 Expires，值为一个绝对时间表示缓存日期
-      - HTTP1.1 增加了 Cache-Control: max-age,值为以秒为单位的最大过期时间
+[第 3 篇: 说一说从输入 URL 到页面呈现发生了什么？——网络篇](https://juejin.im/post/6844904021308735502#heading-24)
 
-3. 浏览器解析 URL 获取协议，主机，端口，路径
-4. 浏览器组装一个 HTTP（GET）请求报文
-5. 浏览器获取主机 ip 地址，过程如下：
-   1. 浏览器缓存
-   2. 本机缓存
-   3. hosts 文件
-   4. 路由器缓存
-   5. ISP DNS 缓存
-   6. DNS 递归查询（可能存在负载均衡导致每次 IP 不一样）
-6. 打开一个 socket 与目标 IP 地址，端口建立 TCP 链接，三次握手如下：
-   1. 客户端发送一个 TCP 的 SYN=1，seq=X 的包到服务器端口
-   2. 服务器发回 SYN=1， ACK=X+1， seq=Y 的响应包
-   3. 客户端发送 ACK=Y+1， seq=Z
-7. TCP 链接建立后发送 HTTP 请求
-8. 服务器接受请求并解析，将请求转发到服务程序，如虚拟主机使用 HTTP Host 头部判断请求的服务程序
-9. 服务器检查 HTTP 请求头是否包含缓存验证信息如果验证缓存未更新，返回 304 等对应状态码
-10. 处理程序读取完整请求并准备 HTTP 响应，可能需要查询数据库等操作
-11. 服务器将响应报文通过 TCP 连接发送回浏览器
-12. 浏览器接收 HTTP 响应，然后根据情况选择关闭 TCP 连接或者保留重用，关闭 TCP 连接的四次握手如下：
-    1. 主动方发送 Fin=1， Ack=Z， Seq= X 报文
-    2. 被动方发送 ACK=X+1， Seq=Z 报文
-    3. 被动方发送 Fin=1， ACK=X， Seq=Y 报文
-    4. 主动方发送 ACK=Y， Seq=X 报文
-13. 浏览器检查响应状态吗：是否为 1XX，3XX， 4XX， 5XX，这些情况处理与 2XX 不同
-14. 如果资源可缓存，进行缓存
-15. 对响应进行解码（例如 gzip 压缩）
-16. 根据资源类型决定如何处理（假设资源为 HTML 文档）
+1. 构建请求
 
-17. 解析 HTML 文档，构建 DOM 树，下载资源，构造 CSSOM 树，执行 js 脚本
-18. 构建 DOM 树：
-    1. Tokenizing：根据 HTML 规范将字符流解析为标记
-    2. Lexing：词法分析将标记转换为对象并定义属性和规则
-    3. DOM construction：根据 HTML 标记关系将对象组成 DOM 树
-19. 解析过程中遇到图片、样式表、js 文件，启动下载
-20. 构建 CSSOM 树：
-    1. Tokenizing：字符流转换为标记流
-    2. Node：根据标记创建节点
-    3. CSSOM：节点创建 CSSOM 树
-21. 根据 DOM 树和 CSSOM 树构建渲染树:
-    1. 从 DOM 树的根节点遍历所有可见节点，不可见节点包括：
-    - script,meta 这样本身不可见的标签。
-    - 被 css 隐藏的节点，如 display: none
-    2. 对每一个可见节点，找到恰当的 CSSOM 规则并应用
-    3. 发布可视节点的内容和计算样式
-22. js 解析如下：
-    1. 浏览器创建 Document 对象并解析 HTML，将解析到的元素和文本节点添加到文档中，此时 document.readystate 为 loading
-    2. HTML 解析器遇到没有 async 和 defer 的 script 时，将他们添加到文档中，然后执行行内或外部脚本。这些脚本会同步执行，并且在脚本下载和执行时解析器会暂停。这样就可以用 document.write()把文本插入到输入流中。同步脚本经常简单定义函数和注册事件处理程序，他们可以遍历和操作 script 和他们之前的文档内容
-    3. 当解析器遇到设置了 async 属性的 script 时，开始下载脚本并继续解析文档。脚本会在它下载完成后尽快执行，但是解析器不会停下来等它下载。异步脚本禁止使用 document.write()，它们可以访问自己 script 和之前的文档元素
-    4. 当文档完成解析，document.readState 变成 interactive
-    5. 所有 defer 脚本会按照在文档出现的顺序执行，延迟脚本能访问完整文档树，禁止使用 document.write()
-    6. 浏览器在 Document 对象上触发 DOMContentLoaded 事件
-    7. 此时文档完全解析完成，浏览器可能还在等待如图片等内容加载，等这些内容完成载入并且所有异步脚本完成载入和执行，document.readState 变为 complete，window 触发 load 事件
-23. 显示页面（HTML 解析过程中会逐步显示页面）
+浏览器会构建请求行:
+
+```js
+// 请求方法是 GET，路径为根路径，HTTP 协议版本为 1.1
+GET / HTTP / 1.1;
+```
+
+2. 查找强缓存
+
+先检查强缓存，如果命中直接使用，否则进入下一步
+
+3. DNS 解析
+
+4. 三次握手建立 TCP 连接
+
+5. 发送 HTTP 请求
+
+6. 网络响应
+
+响应完成之后怎么办？TCP 连接就断开了吗？
+不一定。这时候要判断 Connection 字段, 如果请求头或响应头中包含 Connection: Keep-Alive，表示建立了持久连接，这样 TCP 连接会一直保持，之后请求统一站点的资源会复用这个连接。
+否则断开 TCP 连接, 请求-响应流程结束。
+
+### 解析
+
+[第 4 篇: 说一说从输入 URL 到页面呈现发生了什么？——解析算法篇](https://juejin.im/post/6844904021308735502#heading-33)
+完成了网络请求和响应，如果响应头中 Content-Type 的值是 text/html，那么接下来就是浏览器的解析和渲染工作了
+
+1. 构建 DOM 树
+
+2. 构建 CSSOM 树
+
+3. 生成布局树
+
+通过浏览器的布局系统确定元素的位置，生成布局树
+
+### 渲染
+
+[第 5 篇: 说一说从输入 URL 到页面呈现发生了什么？——渲染过程篇](https://juejin.im/post/6844904021308735502#heading-46)
 
 ## **Event Loop**
 
@@ -182,10 +188,18 @@ trident 内核 （ie 浏览器） -ms
 微任务对列，当当前执行栈中的事件执行完毕后，js 引擎首先会判断微任务对列中是否有任务可以执行，如果有就将微任务队首的事
 件压入栈中执行。当微任务对列中的任务都执行完成后再去判断宏任务对列中的任务。
 
-微任务包括了 promise 的回调、node 中的 process.nextTick 、对 Dom 变化监听的 MutationObserver。
+微任务：
 
-宏任务包括了 script 脚本的执行、setTimeout ，setInterval ，setImmediate 一类的定时事件，还有如 I/O 操作、UI 渲
-染等。
+1. promise 的回调
+2. node 中的 process.nextTick
+3. 对 Dom 变化监听的 MutationObserver。
+
+宏任务：
+
+1. script 脚本的执行
+2. setTimeout ，setInterval ，setImmediate 一类的定时事件
+3. I/O 操作
+4. UI 渲染
 
 #### Micro-Task 与 Macro-Task
 
@@ -256,7 +270,7 @@ setTimeout(() => {
 
 在构建 CSSOM 树时，会阻塞渲染，直至 CSSOM 树构建完成。并且构建 CSSOM 树是一个十分消耗性能的过程，所以应该尽量保证层级扁平，减少过度层叠，越是具体的 CSS 选择器，执行速度越慢。
 
-JavaScript 的加载、解析与执行会阻塞文档的解析，也就是说，在构建 DOM 时，HTML 解析器若遇到了 JavaScript，那么它会暂停文档的解析，将控制权移交给 JavaScript 引擎，等 JavaScript 引擎运行完毕，浏览器再从中断的地方恢复继续解析文档。也就是说，如果你想首屏渲染的越快，就越不应该在首屏就加载 JS 文件，这也是都建议将 script 标签放在 body 标签底部的原因。当然在当下，并不是说 script 标签必须放在底部，因为你可以给 script 标签添加 defer 或者 async 属性。
+JavaScript 的加载、解析与执行会阻塞文档的解析，也就是说，在构建 DOM 时，HTML 解析器若遇到了 JavaScript，那么它会暂停文档的解析，将控制权移交给 JavaScript 引擎，等 JavaScript 引擎运行完毕，浏览器再从中断的地方恢复继续解析文档。也就是说，如果你想首屏渲染的越快，就越不应该在首屏就加载 JS 文件，这也是都建议将 script 标签放在 body 标签底部的原因。当然在当下，并不是说 script 标签必须放在底部，因为你可以给 script 标签添加 defer 或者 async 属性
 
 ![](https://yck-1254263422.cos.ap-shanghai.myqcloud.com/blog/2019-06-01-042734.png)
 
@@ -345,9 +359,17 @@ test(); *//*执行完毕后之后，*a*和*b*又被标记*"*离开环境*"*，�
 
 缺点：相互引用造成内存泄漏
 
+### 内存溢出
+
+一种程序运行出现的错误
+
+当程序运行需要的内存超过了剩余的内存时，就会抛出内存移除错误
+
 ### 内存泄漏
 
-内存泄漏指任何对象在您不再拥有或需要它之后仍然存在。
+占用的内存没有及时被释放
+
+内存泄露积累多了就容易导致内存泄漏
 
 垃圾回收器定期扫描对象，并计算引用了每个对象的其他对象的数量。如果一个对象的引用数量为 0（没有其他对象引用过该对象），或对该对象的惟一引用是循环的，那么该对象的内存即可回收。
 
@@ -372,9 +394,25 @@ test(); *//*执行完毕后之后，*a*和*b*又被标记*"*离开环境*"*，�
 })();
 ```
 
+7. 没有及时清理计时器或回调函数
+
+```js
+var intervalId = setInterval(function() {
+  console.log('-');
+}, 1000);
+
+//clearInterval(intervalId);
+```
+
 [深入了解 JavaScript 内存泄露](https://segmentfault.com/a/1190000020231307)
 
 ## **错误监控**
+
+[如何优雅处理前端异常？](http://jartto.wang/2018/11/20/js-exception-handling/)
+
+[JS 异步错误捕获二三事](https://juejin.im/post/6844903830409183239)
+
+[前端开发中的 Error 以及异常捕获](https://juejin.im/post/6844903751271055374)
 
 ### 即时运行错误
 
@@ -447,11 +485,11 @@ img 标签、script 标签都可以添加 onerror 事件，用来捕获资源加
 
 ## **cookie**
 
-[HTTP cookies](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Cookies)
+[HTTP cookies|MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Cookies)
 
-HTTP 是一个无状态的协议，每次 http 请求都是独立、无关的，默认不需要保留状态信息。
+HTTP Cookie 是服务器发送到用户浏览器并保存在本地的一小块数据,它会在浏览器下次向同一服务器再发起请求时被携帯并发送到服务器上。
 
-有时候需要保存一些状态，HTTP 为此引入了 Cookie。Cookie 本质上就是浏览器里面存储的一个很小的文本文件，内部以键值对的方式来存储。向同一个域名下发送请求，都会携带相同的 Cookie，服务器拿到 Cookie 进行解析，便能拿到客户端的状态。而服务端可以通过响应头中的 Set-Cookie 字段来对客户端写入 Cookie。
+通常,它用于告知服务端两个请求是否来自同一浏览器,如保持用户的登录状态。Cookie 使基于无状态的 HTTP 协议记录稳定的状态信息成为了可能。
 
 ### cookie 作用
 
@@ -462,34 +500,63 @@ HTTP 是一个无状态的协议，每次 http 请求都是独立、无关的，
 ### cookie 设置
 
 1. 当服务器收到 HTTP 请求时，服务器可以在响应头里面添加一个 `Set-Cookie` 选项。
-2. 浏览器收到响应后通常会保存下 Cookie，之后对该服务器每一次请求中都通过 `Cookie` 请求头部将 Cookie 信息发送给服务器（会带来额外的性能开销（尤其是在移动环境下）。新的浏览器 API 已经允许开发者直接将数据存储到本地，如使用 Web storage API （本地存储和会话存储）或 IndexedDB )
+2. 浏览器收到响应后通常会保存下 Cookie
+3. 之后对该服务器每一次请求中都通过 `Cookie` 请求头部将 Cookie 信息发送给服务器
+
+会带来额外的性能开销（尤其是在移动环境下）。新的浏览器 API 已经允许开发者直接将数据存储到本地，如使用 Web storage API （本地存储和会话存储）或 IndexedDB
 
 Cookie 的过期时间、域、路径、有效期、适用站点都可以根据需要来指定。
 
+### cookie 类型
+
+1. 会话期 cookie
+
+浏览器关闭之后它会被自动删除,也就是说它仅在会话期内有效会话期 Cookie 不需要指定过期时间( Expires)或者有效期(Max-Age)。需要注意的是,有些浏览器提供了会话恢复功能,这种情况下即使关闭了浏览器,会话期 Cookie 也会被保留下来,就好像浏览器从来没有关闭一样
+
+2. 持久性 Cookie
+
+和关闭浏览器便失效的会话期 Cookie 不同,持久性 Cookie 可以指定一个特定的过期时间( Expires)或有效期(Max-Age)提示:当 Cookie 的过期时间被设定时,设定的日期和时间只与客户端相关,而不是服务端。
+
+3. 第三方 Cookie
+
+每个 Cookie 都会有与之关联的域( Domain),如果 Cookie 的域和页面的域相同,那么我们称这个 Cookie 为第一方 Cookie( first-party cookie),如果 Cookie 的域和页面的城不同,则称之为第三方 Cookie( third-party cookie)。一个页面包含图片或存放在其他域上的资源(如图片广告)时,第方的 Cookie 也只会发送给设置它们的服务器。通过第三方组件发送的第三方 Cookie 主要用于广告和网络追踪。这方面可以看谷歌使用的 Cookie 类型( types of cookies used by Google)。大多数浏览器默认都允许第三方 Cookie,但是可以通过附加组件来阻止第三方 Cookie(如 EF 的 PrivacyBadger)。
+
 ### cookie 属性
 
-![](/assets/img/cookie.jpg)
+![](cookie.jpg)
 
 #### Name/Value
 
-用 JavaScript 操作 Cookie 的时候注意对 Value 进行编码处理。
+用 JavaScript 操作 Cookie 的时候注意对 Value 进行编码处理
 
-#### Expires/Max-Age
+#### Expires
+
+Expires 用于设置 Cookie 的过期时间
 
 ```
 Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
+
+```
+
+当 Expires 属性缺省时，表示是会话性 Cookie
+
+会话性 Cookie:值保存在客户端内存中，浏览器关闭之后它会被自动删除，也就是说它仅在会话期内有效。会话期 Cookie 不需要指定过期时间（Expires）或者有效期（Max-Age），会被设置为 Session
+
+持久性 Cookie:会保存在用户的硬盘中，直至过期或者清除 Cookie。这里值得注意的是，设定的日期和时间只与客户端相关，而不是服务端。可以指定一个特定的过期时间（Expires）或有效期（Max-Age）
+
+#### Max-Age
+
+Max-Age 用于设置在 Cookie 失效之前需要经过的秒数
+
+```
 Set-Cookie: id=a3fWa; Max-Age=604800;
 ```
 
-会话性 Cookie:浏览器关闭之后它会被自动删除，也就是说它仅在会话期内有效。会话期 Cookie 不需要指定过期时间（Expires）或者有效期（Max-Age），会被设置为 Session
+- Max-Age 为正数，浏览器会将其持久化，即写到对应的 Cookie 文件中
+- Max-Age 为负数，则表示该 Cookie 只是一个会话性 Cookie
+- Max-Age 为 0 时，则会立即删除这个 Cookie
 
-持久性 Cookie:可以指定一个特定的过期时间（Expires）或有效期（Max-Age）
-
-- Max-Age 为正数，浏览器会将其持久化，即写到对应的 Cookie 文件中。
-
-- Max-Age 为负数，则表示该 Cookie 只是一个会话性 Cookie。
-
-- Max-Age 为 0 时，则会立即删除这个 Cookie。
+假如 Expires 和 Max-Age 都存在，Max-Age 优先级更高
 
 #### Domain
 
@@ -513,13 +580,15 @@ Domain 和 Path 标识共同定义了 Cookie 的作用域：即 Cookie 应该发
 
 #### Secure
 
-标记为 Secure 的 Cookie 只应通过被 HTTPS 协议加密过的请求发送给服务端。使用 HTTPS 安全协议，可以保护 Cookie 在浏览器和 Web 服务器间的传输过程中不被窃取和篡改。
+标记为 Secure 的 Cookie 只应通过被 HTTPS 协议加密过的请求发送给服务端。使用 HTTPS 安全协议，可以保护 Cookie 在浏览器和 Web 服务器间的传输过程中不被窃取和篡改
 
 #### HttpOnly
 
 防止客户端 JS 通过 document.cookie 等方式访问 Cookie，有助于避免 XSS 攻击
 
 #### SameSite
+
+[浏览器系列之 Cookie 和 SameSite 属性](https://github.com/mqyqingfeng/Blog/issues/157)
 
 让 Cookie 在跨站请求时不会被发送，从而可以阻止跨站请求伪造攻击（CSRF）
 
@@ -537,17 +606,17 @@ Domain 和 Path 标识共同定义了 Cookie 的作用域：即 Cookie 应该发
 
 之前默认是 None 的，Chrome80 后默认是 Lax
 
-![](/assets/img/SameSite.png)
+![](SameSite.png)
 
 对大部分 web 应用而言，Post 表单，iframe，AJAX，Image 这四种情况从以前的跨站会发送三方 Cookie，变成了不发送。
 
-Post 表单：应该的，学 CSRF 总会举表单的例子。
+Post 表单
 
-iframe：iframe 嵌入的 web 应用有很多是跨站的，都会受到影响。
+iframe：iframe 嵌入的 web 应用有很多是跨站的，都会受到影响
 
-AJAX：可能会影响部分前端取值的行为和结果。
+AJAX：可能会影响部分前端取值的行为和结果
 
-Image：图片一般放 CDN，大部分情况不需要 Cookie，故影响有限。但如果引用了需要鉴权的图片，可能会受到影响。
+Image：图片一般放 CDN，大部分情况不需要 Cookie，故影响有限。但如果引用了需要鉴权的图片，可能会受到影响
 
 除了这些还有 script 的方式，这种方式也不会发送 Cookie，像淘宝的大部分请求都是 jsonp，如果涉及到跨站也有可能会被影响。
 
@@ -582,6 +651,8 @@ Image：图片一般放 CDN，大部分情况不需要 Cookie，故影响有限�
 2. 性能缺陷。Cookie 紧跟域名，不管域名下面的某一个地址需不需要这个 Cookie ，请求都会携带上完整的 Cookie，这样随着请求数的增多，其实会造成巨大的性能浪费的，因为请求携带了很多不必要的内容。但可以通过 Domain 和 Path 指定作用域来解决。
 
 3. 安全缺陷。由于 Cookie 以纯文本的形式在浏览器和服务器中传递，很容易被非法用户截获，然后进行一系列的篡改，在 Cookie 的有效期内重新发送给服务器，这是相当危险的。另外，在 HttpOnly 为 false 的情况下，Cookie 信息能直接通过 JS 脚本来读取。
+
+Cookie 曾一度用于客户端数据的存储,因当时并没有其它合适的存储办法而作为唯一的存储手段,但现在随着现代浏览器开始支持各种各样的存储方式, Cookie 新渐被淘汰。由于服务器指定 ookie 后,浏览器的每次请求都会携带 Cookie 数据,会带来额外的性能开销(尤其是在移动环境下)。新的浏览器 API 已经允许开发者直接将数据存储到本地,如使用 Web storage Apl(本地存储和会话存储)或 Indexeddb。
 
 ### 实现登录状态保持的两种方法 cookie、session 和 token
 
@@ -678,6 +749,18 @@ alert(docCookies.getItem('unexistingCookie'));
 alert(docCookies.getItem());
 alert(docCookies.getItem('test1;='));
 ```
+
+## **session**
+
+[详解 Cookie，Session，Token](https://juejin.im/post/6844903864810864647)
+
+## **token**
+
+JWT JSON Web Token
+
+access_token 15mins
+
+refresh_token 14days
 
 ## **SessionStorage LocalStorage**
 
@@ -799,17 +882,28 @@ s-maxage：这和 max-age 长得比较像，但是区别在于 s-maxage 是针�
 - DOM 无法获得
 - AJAX 请求不能发送
 
+[再也不学 AJAX 了！（三）跨域获取资源 ② - JSONP & CORS](https://juejin.im/post/6844903519380570120)
+[再也不学 AJAX 了！（三）跨域获取资源 ③ - WebSocket & postMessage](https://juejin.im/post/6844903520647266318)
+
 ### JSONP
 
-1. 前端定义解析函数（例如 jsonpCallback=function(){....}）
+[JSONP 解决 JS 跨域问题](https://juejin.im/post/6844904167262126087)
 
-2. 通过 params 形式包装请求参数，并且声明执行函数(例如 cb=jsonpCallback)
+[40 行封装一个 jsonp 包](https://juejin.im/post/6844903790760427528#comment)
 
-3. 后端获取前端声明的执行函数（jsonpCallback），并以带上参数并调用执行函数的方式传递给前端。
+1. 客户端需要在自己这边有一个定义好的接收服务端数据的函数
+
+2. 使用 script 标签发起一个服务端地址的请求
+
+3. 服务端响应，对应的函数执行，传参完成
 
 ### CORS
 
+[HTTP 访问控制（CORS）|MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS)
+
 [跨域资源共享 CORS 详解](http://www.ruanyifeng.com/blog/2016/04/cors.html)
+
+需要浏览器和服务器同时支持,基本思想为使用自定义的 HTTP 头部让浏览器和服务器通信
 
 只需要后端在响应头设置 `Access-Control-Allow-Origin: *`， `*`为任意 `Origin`，也可以指定 `Origin`
 
@@ -958,197 +1052,6 @@ iframe 内的目标页面 <=> iframe 内的一个和父窗口同源的页面 <=>
 5. 非装饰性图片必须加 alt
 6. 提高网站速度：网站速度是搜索引擎排序的一个重要指标
 
-## **模块化**
-
-[深入浅出 JavaScript 模块化](https://github.com/Nealyang/PersonalBlog/issues/61)
-
-### 好处
-
-1. 可维护性，每一个模块都是独立的。良好的设计能够极大的降低项目的耦合度。以便于其能独立于别的功能被整改。至少维护一个独立的功能模块，比维护一坨凌乱的代码要容易很多。
-2. 减少全局变量污染，前端开发的初期，我们都在为全局变量而头疼，因为经常会触发一些难以排查且非技术性的 bug。当一些无关的代码一不小心重名了全局变量，我们就会遇到烦人的“命名空间污染”的问题。在模块化规范没有确定之前，其实我们都在极力的避免于此。（后文会介绍）
-3. 可复用性，前端模块功能的封装，极大的提高了代码的可复用性。这点应该就不用详细说明了。想想从 npm 上找 package 的时候，是在干啥
-4. 方便管理依赖关系，在模块化规范没有完全确定的时候，模块之间相互依赖的关系非常的模糊，完全取决于 js 文件引入的顺序。粗俗！丝毫没有技术含量，不仅依赖模糊且难以维护。
-
-### 组件化与模块化的区别
-
-组件化：针对的是页面中的整个完整的功能模块，划分成浏览器可以识别的每个模块，例如头部 Header、底部 Footer、Banner。优点：代码复用、便于维护。
-
-模块化：就是系统功能分离或独立的功能部分的方法，一般指的是单一的某个东西，例如：js、css
-
-### CommonJS：
-
-1. require 输入其他模块提供的功能
-
-2. module.exports 规范模块对外接口，输出一个值的拷贝。
-
-3. 输出之后不能改变，会缓存起来
-
-4. 自上而下同步进行 会阻塞 用在服务端
-
-使用模块：
-
-```js
-// moduleA.js
-var name = 'weiqinl';
-function foo() {}
-module.exports = exports = {
-  name,
-  foo,
-};
-// moduleB.js
-var ma = require('./moduleA'); // 可以省略后缀.js
-exports.bar = function() {
-  ma.name === 'weiqinl'; // true
-  ma.foo(); // 执行foo方法
-};
-// moduleC.js
-var mb = require('./moduleB');
-mb.bar();
-```
-
-### AMD
-
-1. define 定义模块.
-
-2. require 用于输入其他模块提供的功能.
-
-3. return 规范模块对外接口。
-
-4. define.amd 是一个对象，表明函数遵守 AMD 规范。AMD 的运行逻辑是，提前加载，提前执行，申明依赖模块的时候，会第一时间加载并执行模块内的代码，使后面的回调函数能在所需的环境中运行。
-
-5. 异步加载文件 不会阻塞 用在浏览器端
-
-```js
-// moduleA.js
-define(['jQuery','lodash'], function($, _) {
-var name = 'weiqinl',
-function foo() {}
-return {
-name,
-foo
-}
-})
-// index.js
-require(['moduleA'], function(a) {
-a.name === 'weiqinl' // true
-a.foo() // 执行A模块中的foo函数
-// do sth...
-})
-// index.html
-// HTML，需要在页面中引入 require.js 文件。
-<script src="js/require.js" data-main="js/index"></script
-```
-
-### CMD
-
-1. define 全局函数，定义模块
-
-2. 通过 exports 向外提供接口
-
-3. 用 require 获取接口，使用某个组件时用 use()调用。通过 require 引入的模块，只有当程序运行到这里时候才会加载执行
-
-4. 主要在浏览器中运行，
-
-```JS
-// moduleA.js
-// 定义模块
-define(function(require, exports, module) {
-var func = function() {
-var a = require('./a') // 到此才会加载 a 模块
-a.func()
-if(false) {
-var b = require('./b') // 到此才会加载 b 模块
-b.func()
-}
-}
-// do sth...
-exports.func = func;
-})
-// index.js
-// 加载使用模块
-seajs.use('moduleA.js', function(ma) {
-var ma = math.func()
-})
-// HTML，需要在页面中引入 sea.js 文件。
-<script src="./js/sea.js"></script>
-<script src="./js/index.js"></script>
-```
-
-### ES6 Module
-
-ES6 模块功能主要由两个命令构成：import 和 export。import 命令用于输入其他模块提供的功能。export 命令用于规范模块的对外接口。
-
-```JS
-// 输出变量
-export var name = 'weiqinl'
-export var year = '2018'
-// 输出一个对象（推荐）
-var name = 'weiqinl'
-var year = '2018'
-export { name, year}
-// 输出函数或类
-export function add(a, b) {
-return a + b;
-}
-// export default 命令
-export default function() {
-console.log('foo')
-}
-// 正常命令
-import { name, year } from './module.js' //后缀.js不能省略
-// 如果遇到export default命令导出的模块
-import ed from './export-default.js'
-```
-
-### AMD 和 CMD 区别
-
-1. 对于依赖的模块，AMD 是提前执行，CMD 是延迟执行。不过 RequireJS 从 2.0 开始，也改成了可以延迟执行（根据写法不同，执行的方式不同）
-2. CMD 推崇就近依赖，AMD 推崇依赖前置。
-
-```js
-//CMD 的方式
-define(function(require, exprots, module) {
-  var a = require('./a');
-  a.dosmting();
-  //省略 1W 行
-  var b = require('./b');
-  b.dosmting();
-});
-
-//AMD 的方式
-define(['./a', './b'], function(a, b) {
-  a.dosmting();
-  //省略 1W 行
-  b.dosmting();
-});
-```
-
-以上 AMD 的写法是官方推崇的方式，但是同时也支持 CMD 的写法
-
-3. AMD 支持全局 require、局部 require，但是 CMD 不支持全局 require，所以 CMD 没有全局 API 而 AMD 有
-
-### CommonJS 和 ES6 Module 的区别
-
-1. CommonJS : `module.exports(批量)，exports` 导出，`require` 导入
-   ES6 : `export` 导出，`import` 导入
-
-2. CommonJS：动态引入，执行时引入，可以写在判断里
-   ES6 Module：静态引入，编译时引入；只有 ES6 Module 才能静态分析，实现 Tree-Shaking
-
-3. CommonJS 不会提升 require
-   ES6 在编译期间会将所有 import 提升到顶部，
-
-4. CommonJS 导出的是一个值拷贝，会对加载结果进行缓存，一旦内部再修改这个值，则不会同步到外部，如果想更新值，必须重新导入一次
-   ES6 是导出的一个引用，导入导出的值都指向同一个内存地址，所以导入值会跟随导出值变化
-
-5. CommonJS ：顶层的 this 指向当前
-   ES6 ：顶层 this 指向 undefined
-
-6. CommonJS：同步导入，因为用于服务端，文件都在本地，同步导入即使卡住主线程影响也不大
-   ES6 Module：异步导入，因为用于浏览器，需要下载文件，如果也采用同步导入会对渲染有很大影响
-
-7. ES6 Module 兼容性不好，在 webpack 中会经过 Babel 编译成 require/exports 来执行的
-
 ## **webSocket**
 
 ### 实现浏览器内多个标签页之间的通信
@@ -1236,3 +1139,31 @@ define(['./a', './b'], function(a, b) {
   </body>
 </html>
 ```
+
+## **WebAssembly**
+
+WebAssembly 有一套完整的语义，实际上 wasm 是体积小且加速快的二级制格式，其目标就是充分发挥硬件能力以达到原生的执行效率
+
+WebAssembly 是一种可以使用非 Javascript 编程语言编写代码并且能在浏览器上运行的技术方案，实际上，是一种新的字节码格式
+
+![](/WebAssembly.png)
+
+### WebAssembly 的优势
+
+文件加载：WebAssembly 文件体积更小，所以下载速度更快
+
+解析：解码 WebAssembly 比解析 Javascript 更快
+
+编译和优化：编译优化所需的时间更小，因为再将文件推送的服务器端之前已经进行了优化，Javascript 需要为动态类型多次编译代码
+
+重新优化：WebAssembly 代码不需要重新优化，因为编译器有足够的信息可以在第一次运行时获得正确的代码
+
+执行：执行可以更快，WebAssembly 指令更接近机器码
+
+垃圾回收：目前 WebAssembly 不直接支持垃圾回收，垃圾回收都是手动控制的，所以比自动垃圾回收效率更高
+
+安全：可以放 hash 和签名等等
+
+### WebAssembly 的应用
+
+视频和音频的解编码器，图形和 3D，多媒体和游戏，密码计算或便携式语言实现

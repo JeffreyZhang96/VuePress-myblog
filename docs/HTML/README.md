@@ -180,6 +180,8 @@ res.setHeader('Location', 'https://messiahhh.github.io/blog');
 
 ## **HTML5**
 
+[HTML5|MDN](https://developer.mozilla.org/zh-CN/docs/Web/Guide/HTML/HTML5)
+
 ### HTML5 的改变
 
 HTML5 现在已经不是 SGML 的子集，主要是关于图像，位置，存储，多任务等功能的增加。
@@ -202,6 +204,8 @@ HTML5 现在已经不是 SGML 的子集，主要是关于图像，位置，存�
 [HTML5 新特性](https://developer.mozilla.org/zh-CN/docs/Web/Guide/HTML/HTML5)
 
 ### HTML5 语义化标签
+
+[HTML5 标签列表](https://developer.mozilla.org/zh-CN/docs/Web/Guide/HTML/HTML5/HTML5_element_list)
 
 1. html 语义化让页面的内容结构化，结构更清晰，便于对浏览器、搜索引擎解析;
 2. 即使在没有样式 CSS 情况下也以一种文档格式显示，并且是容易阅读的;
@@ -289,3 +293,7 @@ HTML5 现在已经不是 SGML 的子集，主要是关于图像，位置，存�
 ### shadow DOM
 
 [shadow DOM](https://developer.mozilla.org/zh-CN/docs/Web/Web_Components/Using_shadow_DOM)
+
+### Performance API
+
+[性能优化篇 - Performance（工具 & api）](https://juejin.im/post/6844903801518981133)

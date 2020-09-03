@@ -109,6 +109,33 @@ JS 中有 7 种原始值，分别是：
 
 虽然 typeof null 会输出 object，但是这只是 JS 存在的一个悠久 Bug。在 JS 的最初版本中使用的是 32 位系统，为了性能考虑使用低位存储变量的类型信息，000 开头代表是对象然而 null 表示为全零，所以将它错误的判断为 object
 
+#### 值传递 引用传递
+
+值传递：(形式参数类型是基本数据类型)：方法调用时，实际参数把它的值传递给对应的形式参数，形式参数只是用实际参数的值初始化自己的存储单元内容，是两个不同的存储单元，所以方法执行中形式参数值的改变不影响实际参数的值。
+
+引用传递：(形式参数类型是引用数据类型参数)：也称为传地址。方法调用时，实际参数是对象(或数组)，这时实际参数与形式参数指向同一个地址，在方法执行中，对形式参数的操作实际上就是对实际参数的操作，这个结果在方法结束后被保留了下来，所以方法执行中形式参数的改变将会影响实际参数
+
+ECMAScript 中所有函数的参数都是按值传递的
+
+```js
+function changeAgeAndReference(person) {
+  person.age = 25;
+  person = {
+    name: 'John',
+    age: 50,
+  };
+
+  return person;
+}
+var personObj1 = {
+  name: 'Alex',
+  age: 30,
+};
+var personObj2 = changeAgeAndReference(personObj1);
+console.log(personObj1); // -> ?
+console.log(personObj2); // -> ?
+```
+
 #### 基本包装类型
 
 ```js
@@ -201,9 +228,26 @@ BigInt 可以正常地进行位运算，如|、&、<<、>>和^
 
 #### instanceof
 
-核心: 原型链的向上查找
+通过判断 instanceof 的左侧在其原型链中是否存在右侧的 prototype 属性
 
 [instanceof 判断基本数据类型:hasInstance](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Symbol/hasInstance)
+
+#### typeof
+
+typeof 对于原始类型来说，除了 null 都可以显示正确的类型
+
+typeof 对于对象来说，除了函数都会显示 object
+
+```js
+console.log(typeof 2); // number
+console.log(typeof true); // boolean
+console.log(typeof 'str'); // string
+console.log(typeof []); // object     []数组的数据类型在 typeof 中被解释为 object
+console.log(typeof function() {}); // function
+console.log(typeof {}); // object
+console.log(typeof undefined); // undefined
+console.log(typeof null); // object     null 的数据类型被 typeof 解释为 object
+```
 
 #### 判断 Array
 
@@ -246,18 +290,18 @@ BigInt 可以正常地进行位运算，如|、&、<<、>>和^
 
 #### ToNumber
 
-1.  undefined 类型的值转换为 NaN。
+1.  undefined 类型的值转换为 NaN
 
-2.  null 类型的值转换为 0。
+2.  null 类型的值转换为 0
 
-3.  true 转换为 1，false 转换为 0。
+3.  true 转换为 1，false 转换为 0
 
-4.  String 类型的值转换如同使用 Number() 函数进行转换，如果包含非数字值则转换为 NaN，空字符串为 0。
+4.  String 类型的值转换如同使用 Number() 函数进行转换，如果包含非数字值则转换为 NaN，空字符串为 0
 
-5.  Symbol 类型的值不能转换为数字，会报错。
+5.  Symbol 类型的值不能转换为数字，会报错
 
 6.  对象（包括数组）会首先 ToPrimitive 被转换为相应的基本类型值，如果返回的是非数字的基本类型值，则再遵循以上规则将其强制转
-    换为数字。
+    换为数字
 
 #### ToPrimitive
 
@@ -304,6 +348,22 @@ function is(x, y) {
     return x !== x && y !== y;
   }
 
+```
+
+#### 技巧
+
+```js
+// 强制转换为Boolean 用 !!
+var bool = !!'c';
+console.log(typeof bool); // boolean
+
+// 强制转换为Number 用 +
+var num = +'1234';
+console.log(typeof num); // number
+
+// 强制转换为String 用 ""+
+var str = '' + 1234;
+console.log(typeof str); // string
 ```
 
 ## **引用类型**
@@ -375,25 +435,25 @@ while ((result = patt.exec(str)) != null) {
 
 ### 拷贝
 
-**浅拷贝：**仅仅是指向被复制的内存地址，如果原地址发生改变，那么浅复制出来的对象也会相应的改变。
+浅拷贝：仅仅是指向被复制的内存地址，如果原地址发生改变，那么浅复制出来的对象也会相应的改变。
 
-> 创建一个新对象，这个对象有着原始对象属性值的一份精确拷贝。如果属性是基本类型，拷贝的就是基本类型的值，如果属性是引用类型，拷贝的就是内存地址 ，所以如果其中一个对象改变了这个地址，就会影响到另一个对象。
+创建一个新对象，这个对象有着原始对象属性值的一份精确拷贝。如果属性是基本类型，拷贝的就是基本类型的值，如果属性是引用类型，拷贝的就是内存地址 ，所以如果其中一个对象改变了这个地址，就会影响到另一个对象。
 
-**深拷贝：**在计算机中开辟一块**新的内存地址**用于存放复制的对象。
+深拷贝：在计算机中开辟一块**新的内存地址**用于存放复制的对象。
 
-> 将一个对象从内存中完整的拷贝一份出来,从堆内存中开辟一个新的区域存放新对象,且修改新对象不会影响原对象
+将一个对象从内存中完整的拷贝一份出来,从堆内存中开辟一个新的区域存放新对象,且修改新对象不会影响原对象
 
-**深拷贝和浅拷贝最根本的区别在于是否是真正获取了一个对象的复制实体，而不是引用。**
+深拷贝和浅拷贝最根本的区别在于是否是真正获取了一个对象的复制实体，而不是引用
 
-![](/assets/img/深浅拷贝.png)
+![](深浅拷贝.png)
 
 [彻底讲明白浅拷贝与深拷贝](https://www.jianshu.com/p/35d69cf24f1f)
 
-**浅拷贝实现方法:**
+浅拷贝实现方法
 
 1. Object.assign
 
-   - Object.assign 是一个浅拷贝,它只是在**根属性**(对象的第一层级)创建了一个新的对象，但是对于属性的值是仍是对象的话依然是浅拷贝
+   - Object.assign 是一个浅拷贝,它只是在根属性(对象的第一层级)创建了一个新的对象，但是对于属性的值是仍是对象的话依然是浅拷贝
 
    - 不会拷贝对象继承的属性
 
@@ -401,11 +461,11 @@ while ((result = patt.exec(str)) != null) {
 
    - 可以拷贝 Symbol 类型
 
-2. 扩展运算符、slice、concat
+2. .../slice/concat
 
    - 和 assgin 一样只拷贝一层
 
-**深拷贝实现方法:**
+深拷贝实现方法
 
 1. 循环+递归
 
@@ -449,6 +509,14 @@ while ((result = patt.exec(str)) != null) {
 [执行上下文及其生命周期](https://www.jianshu.com/p/a6e8d2bf1ca0)
 [JavaScript 进阶-执行上下文](https://juejin.im/post/5db85b866fb9a0207d4cbf92)
 
+当 JS 引擎解析到可执行代码片段（通常是函数调用阶段）的时候，就会先做一些执行前的准备工作，这个 “准备工作”，就叫做 "执行上下文(execution context 简称 EC)" 或者也可以叫做执行环境。
+
+执行上下文为我们的可执行代码块提供了执行前的必要准备工作
+
+1. 变量对象的定义
+2. 作用域链的扩展
+3. 提供调用者的对象引用等信息
+
 每个执行上下文都有 3 个重要属性：
 
 - 变量对象
@@ -461,6 +529,14 @@ while ((result = patt.exec(str)) != null) {
 - 函数执行上下文：有无数个，只有在函数被调用时才会被创建，每次调用函数都会创建一个新的执行上下文。
 - Eval 函数执行上下文：js 的 eval 函数执行其内部的代码会创建属于自己的执行上下文, 很少用而且不建议使用。
 
+### 执行上下文栈
+
+1. 全局代码执行前，JS 引擎就会创建一个栈来存储管理所有的执行上下文对象
+2. 在全局执行上下文(window)确定后，将其添加到栈中
+3. 在函数执行时，函数执行上下文创建后，将其添加到栈中
+4. 在当前函数执行完后，将栈顶的对象移除出栈
+5. 当所有的代码完成后，栈只剩下 window
+
 ### 作用域链
 
 一般情况下变量取值回到创建这个变量函数的作用域中取值，但是如果当前作用域中没有查到值，就会向上级作用域去查，直到查到全局作用域，这个查找过程形成的链条就叫作用域链
@@ -469,15 +545,89 @@ while ((result = patt.exec(str)) != null) {
 
 闭包是指有权访问另一个函数作用域中变量的函数
 
-创建闭包的最常见的方式就是在一个函数内创建另一个函数，创建的函数可以访问到当前函数的局部变量
+#### 闭包的产生
 
-用途
+当一个嵌套的内部函数引用了嵌套的外部函数的变量（函数）时，就产生了闭包
 
-1. 使函数外部能够访问到函数内部的变量。通过使用闭包，我们可以通过在外部调用闭包函数，从而在外部访问到函数内部的变量，可以使用这种方法来创建私有变量
+1. 函数嵌套
+2. 内部函数引用了外部函数的数据（变量、函数）
+3. 外部函数执行
 
-2. 使已经运行结束的函数上下文中的变量对象继续留在内存中，因为闭包函数保留了这个变量对象的引用，所以这个变量对象不会被回收
+```js
+function fn1() {
+  var a = 1;
+  function fn2() {
+    console.log(a);
+  }
+}
+fn1();
+```
 
-[什么是闭包？闭包的作用，用法及优缺点](https://www.cnblogs.com/amcy/p/9912528.html##_label0)
+#### 常见的闭包
+
+1. 将函数作为另一个函数的返回值
+
+```js
+function fn1() {
+  var a = 1;
+  function fn2() {
+    a++;
+    console.log(a);
+  }
+}
+var f = fn1();
+f();
+f();
+```
+
+2. 将函数作为实参传递给实参调用
+
+```js
+function showDelay(msg, time) {
+  setTimeout(function() {
+    alert(msg);
+  }, time);
+}
+showDelay();
+```
+
+#### 用途
+
+1. 使函数内部的变量在函数执行完后，仍然存活在内存中（延长了局部变量的生命周期）
+2. 让函数外部可以操作（读写）到函数内部的数据（变量、函数）
+3. 定义 JS 模块
+
+#### 缺点
+
+1. 函数执行完后，函数内的局部变量没有释放，占用内存的时间会延长
+2. 容易造成内存泄漏
+
+解决
+
+1. 能不用闭包就不用
+2. 及时释放
+
+#### 生命周期
+
+产生：
+在嵌套函数内部定义执行完成时就产生了（不是在调用）
+死亡：
+在嵌套的内部函数成为垃圾对象时
+
+```js
+function fn1() {
+  //此时闭包就已经产生了（函数提升，内部函数对象已经创建了）
+  var a = 1;
+  function fn2() {
+    a++;
+    console.log(a);
+  }
+}
+var f = fn1();
+f();
+f();
+f = null; //闭包死亡（包含闭包的函数对象成为垃圾对象）
+```
 
 #### 计数器
 
@@ -793,6 +943,8 @@ test().fn();
 [Js 是基于对象还是面向对象的](https://blog.csdn.net/qq_42615057/article/details/98732902)
 
 ### 属性值
+
+[如何限制 JS 对象属性的配置](https://blog.csdn.net/weixin_38382659/article/details/92198715)
 
 #### 数据属性
 
@@ -1264,7 +1416,7 @@ function getStyle(obj, attr) {
 
 JavaScript 是使用构造函数来新建一个对象的，每一个构造函数的内部都有一个 prototype 属性值，这个属性值是一个对象，这个对象包含了该构造函数的所有实例共享的属性和方法。当我们使用构造函数新建一个对象后，在这个对象的内部将包含一个 proto 指针，这个指针指向构造函数的 prototype。
 
-当我们访问一个对象的属性时，如果这个对象内部不存在这个属性，那么它就会去它的原型对象里找这个属性，这个原型对象又会有自己的原型，于是就这样一直找下去，也就是原型链的概念
+当访问一个对象的属性 / 方法时，它不仅仅在该对象上查找，还会查找该对象的原型，以及该对象的原型的原型，一层一层向上查找，直到找到一个名字匹配的属性 / 方法或到达原型链的末尾（null）
 
 [帮你彻底搞懂 JS 中的 prototype、proto 与 constructor（图解](https://blog.csdn.net/cc18868876837/article/details/81211729)
 
@@ -1335,8 +1487,6 @@ console.log(child.__proto__.__proto__.constructor.constructor.constructor);
 
 ## **继承**
 
-[js 手写继承 6 种方式](https://www.cnblogs.com/humin/p/4556820.html)
-
 ### 原型链继承
 
 原理：让父类的属性和方法在子类实例的原型链上
@@ -1353,10 +1503,12 @@ A.prototype.getX = function() {
 function B(y) {
   this.y = y;
 }
+
 ////////////////////////
 B.prototype = new A(100);
 B.prototype.constructor = B;
 ////////////////////////
+
 B.prototype.getY = function() {
   console.log(this.y);
 };
@@ -1367,7 +1519,7 @@ b.x; //100
 b.y; //200
 ```
 
-![](/assets/img/原型链继承.png)
+![](/原型链继承.png)
 
 特点：
 
@@ -1404,7 +1556,7 @@ b.getY(); //200
 
 特点：
 
-1. 只能继承父类私有的属性或方法（因为是把 PARENT 当作普通函数执行，和其原型上的属性方法没有关系）
+1. 子类没有继承父类的原型属性和方法，只继承了父类构造函数中的属性和方法
 2. 父类私有的变为子类私有的
 
 ### 组合继承
@@ -1471,7 +1623,7 @@ b.x; //100
 b.y; //200
 ```
 
-![](/assets/img/寄生组合继承.png)
+![](/寄生组合继承.png)
 
 特点：父类私有和公有的分别是子类实例的私有和公有属性方法（推荐）
 
@@ -1515,16 +1667,15 @@ b.x; //100
 b.y; //200
 ```
 
+k
+
 ## **AJAX**
 
-Ajax 即“Asynchronous Javascript And XML”（异步 JavaScript 和 XML），是指一种创建交互式、快速动态网页应用的网页开发技术，无需重新加载整个网页的情况下，能够更新部分网页的技术
+[XMLHttpRequest|MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest)
 
-通过在后台与服务器进行少量数据交换，Ajax 可以使网页实现异步更新。这意味着可以在不重新加载整个网页的情况下，对网页的某部分进行更新。
+[再也不学 AJAX 了！（二）使用 AJAX](https://juejin.im/post/6844903518055186445)
 
-[从 ajax 到 fetch、axios](https://juejin.im/post/5acde23c5188255cb32e7e76)
-[ajax 和 axios、fetch 的区别](https://www.jianshu.com/p/8bc48f8fde75)
-
-### 原生 ajax
+### 原生 AJAX
 
 #### 手写 ajax
 
@@ -1557,9 +1708,11 @@ ajax(url)
   });
 ```
 
-### 基于 jQuery 的 ajax
+### 基于 jQuery 的 AJAX
 
-### [fetch](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)
+### Fetch
+
+[Fetch|MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)
 
 #### AJAX 和 fetch 区别
 
@@ -1740,7 +1893,10 @@ axios.interceptors.response.use(
 );
 ```
 
-## **ES6**
+[从 ajax 到 fetch、axios](https://juejin.im/post/5acde23c5188255cb32e7e76)
+[ajax 和 axios、fetch 的区别](https://www.jianshu.com/p/8bc48f8fde75)
+
+## **ES6\2015**
 
 ### 常用 ES6 新特性
 
@@ -1752,6 +1908,20 @@ axios.interceptors.response.use(
 - `for-of`和`for-in`
 - `class`语法糖
 - `Promise`
+
+### let const
+
+[let 和 const 命令|阮一峰](https://es6.ruanyifeng.com/?search=%E7%A7%81%E6%9C%89&x=0&y=0#docs/let)
+
+- 全局声明的 var 变量会挂载在 window 上，而 let 和 const 不会
+- var 声明变量存在变量提升，let 和 const 不会
+- let、const 的作用范围是块级作用域，而 var 的作用范围是函数作用域
+- 同一作用域下 let 和 const 不能声明同名变量，而 var 可以
+- 同一作用域下在 let 和 const 声明前使用会存在暂时性死区
+- const
+  - 一旦声明必须赋值,不能使用 null 占位
+  - 声明后不能再修改
+  - 如果声明的是引用数据，可以修改其属性
 
 ### Set Map
 
@@ -1813,17 +1983,18 @@ Map 和 Set 中对象的引用都是强类型化的，并不会允许垃圾回�
 
 [WeakMap 的学习与应用场景](https://blog.csdn.net/weixin_38382659/article/details/93386960)
 
-### var、let 及 const 区别
+### 数组扩展
 
-- 全局声明的 var 变量会挂载在 window 上，而 let 和 const 不会
-- var 声明变量存在变量提升，let 和 const 不会
-- let、const 的作用范围是块级作用域，而 var 的作用范围是函数作用域
-- 同一作用域下 let 和 const 不能声明同名变量，而 var 可以
-- 同一作用域下在 let 和 const 声明前使用会存在暂时性死区
-- const
-  - 一旦声明必须赋值,不能使用 null 占位
-  - 声明后不能再修改
-  - 如果声明的是引用数据，可以修改其属性
+[数组的扩展|阮一峰](https://es6.ruanyifeng.com/#docs/array)
+
+扩展运算符
+Array.from()
+Array.of()
+数组实例的 copyWithin()
+数组实例的 find() 和 findIndex()
+数组实例的 fill()
+数组实例的 entries()，keys() 和 values()
+数组实例的 flat()，flatMap()
 
 ### ES6 中箭头函数与普通函数的区别
 
@@ -1865,63 +2036,8 @@ for..of 适用遍历数/数组对象/字符串/map/set 等拥有迭代器对象�
 
 ### Promise
 
+[Promise|MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 [Promises/A+规范](https://www.ituring.com.cn/article/66566)
-
-### async 和 await
-
-一个函数如果加上 async ，那么该函数就会返回一个 Promise
-
-```js
-async function test() {
-  return '1';
-}
-console.log(test());
-// -> Promise {<resolved>: "1"}
-```
-
-async 就是将函数返回值使用 Promise.resolve() 包裹了下，和 then 中处理返回值一样，并且 await 只能配套 async 使用。
-
-```js
-async function test() {
-  let value = await sleep();
-}
-```
-
-async 和 await 可以说是异步终极解决方案了，相比直接使用 Promise 来说，优势在于处理 then 的调用链，能够更清晰准确的写出代码，毕竟写一大堆 then 也很恶心，并且也能优雅地解决回调地狱问题。
-
-当然也存在一些缺点，因为 **await 将异步代码改造成了同步代码**，如果多个异步代码没有依赖性却使用了 await 会导致性能上的降低。
-
-```js
-async function test() {
-  // 以下代码没有依赖性的话，完全可以使用 Promise.all 的方式
-  // 如果有依赖性的话，其实就是解决回调地狱的例子了
-  await fetch(url);
-  await fetch(url1);
-  await fetch(url2);
-}
-```
-
-看一个使用 await 的例子：
-
-```js
-let a = 0;
-let b = async () => {
-  a = a + (await 10);
-  console.log('2', a);
-};
-b();
-a++;
-console.log('1', a);
-
-//先输出  ‘1’, 1
-//在输出  ‘2’, 10
-```
-
-- 首先函数 b 先执行，在执行到 await 10 之前变量 a 还是 0，因为 await 内部实现了 generator ，generator 会保留堆栈中东西，所以这时候 a = 0 被保存了下来
-- 因为 await 是异步操作，后来的表达式不返回 Promise 的话，就会包装成 Promise.reslove(返回值)，然后会去执行函数外的同步代码
-- 同步代码 a++ 与打印 a 执行完毕后开始执行异步代码，将保存下来的值拿出来使用，这时候 a = 0 + 10
-
-上述解释中提到了 await 内部实现了 generator，其实 **await 就是 generator 加上 Promise 的语法糖，且内部实现了自动执行 generator**。
 
 ### Generator 生成器
 
@@ -2052,9 +2168,296 @@ main();
 
 [10 分钟学会 ES7+ES8](https://www.cnblogs.com/zhuanzhuanfe/p/7493433.html)
 
-## **ES2020**
+## **ES7\2016**
+
+includes()
+
+## **ES8\2017**
+
+### async await
+
+一个函数如果加上 async ，那么该函数就会返回一个 Promise
+
+```js
+async function test() {
+  return '1';
+}
+console.log(test());
+// -> Promise {<resolved>: "1"}
+```
+
+async 就是将函数返回值使用 Promise.resolve() 包裹了下，和 then 中处理返回值一样，并且 await 只能配套 async 使用。
+
+```js
+async function test() {
+  let value = await sleep();
+}
+```
+
+async 和 await 可以说是异步终极解决方案了，相比直接使用 Promise 来说，优势在于处理 then 的调用链，能够更清晰准确的写出代码，毕竟写一大堆 then 也很恶心，并且也能优雅地解决回调地狱问题。
+
+当然也存在一些缺点，因为 **await 将异步代码改造成了同步代码**，如果多个异步代码没有依赖性却使用了 await 会导致性能上的降低。
+
+```js
+async function test() {
+  // 以下代码没有依赖性的话，完全可以使用 Promise.all 的方式
+  // 如果有依赖性的话，其实就是解决回调地狱的例子了
+  await fetch(url);
+  await fetch(url1);
+  await fetch(url2);
+}
+```
+
+看一个使用 await 的例子：
+
+```js
+let a = 0;
+let b = async () => {
+  a = a + (await 10);
+  console.log('2', a);
+};
+b();
+a++;
+console.log('1', a);
+
+//先输出  ‘1’, 1
+//在输出  ‘2’, 10
+```
+
+- 首先函数 b 先执行，在执行到 await 10 之前变量 a 还是 0，因为 await 内部实现了 generator ，generator 会保留堆栈中东西，所以这时候 a = 0 被保存了下来
+- 因为 await 是异步操作，后来的表达式不返回 Promise 的话，就会包装成 Promise.reslove(返回值)，然后会去执行函数外的同步代码
+- 同步代码 a++ 与打印 a 执行完毕后开始执行异步代码，将保存下来的值拿出来使用，这时候 a = 0 + 10
+
+上述解释中提到了 await 内部实现了 generator，其实 **await 就是 generator 加上 Promise 的语法糖，且内部实现了自动执行 generator**。
+
+## **ES9\2018**
+
+## **ES10\2019**
+
+## **ES11\2020**
 
 ### globalThis
+
+## **模块化**
+
+[深入浅出 JavaScript 模块化](https://github.com/Nealyang/PersonalBlog/issues/61)
+
+### 好处
+
+1. 可维护性，每一个模块都是独立的。良好的设计能够极大的降低项目的耦合度。以便于其能独立于别的功能被整改。至少维护一个独立的功能模块，比维护一坨凌乱的代码要容易很多。
+
+2. 减少全局变量污染，前端开发的初期，我们都在为全局变量而头疼，因为经常会触发一些难以排查且非技术性的 bug。当一些无关的代码一不小心重名了全局变量，我们就会遇到烦人的“命名空间污染”的问题。在模块化规范没有确定之前，其实我们都在极力的避免于此。（后文会介绍）
+
+3. 可复用性，前端模块功能的封装，极大的提高了代码的可复用性。这点应该就不用详细说明了。想想从 npm 上找 package 的时候，是在干啥
+
+4. 更好的分离，按需加载
+
+### CommonJS
+
+每个文件都可以当作一个模块
+
+在服务器端：模块的加载是运行时同步加载的
+
+在浏览器端：模块需要提前编译打包处理（require 浏览器不认识）
+
+#### 语法
+
+暴露模块
+
+```js
+module.exports = value;
+exports.xxx = value;
+```
+
+[require 时，exports 和 module.exports 的区别你真的懂吗？](https://www.imooc.com/article/291145#comment)
+
+引入模块
+
+```js
+//第三方模块,xxx为模块名
+//自定义模块,xxx为模块文件路径
+require(xxx);
+```
+
+#### 实现
+
+服务器端
+
+NodeJS
+
+浏览器端
+
+Browserify（CommonJS 的浏览器的打包工具）
+
+### AMD
+
+专门用于浏览器端, 模块的加载是异步的
+
+#### 语法
+
+定义暴露模块
+
+```js
+//定义没有依赖的模块
+define(function() {
+  return 模块;
+});
+//定义有依赖的模块
+define(['module1', 'module2'], function(m1, m2) {
+  return 模块;
+});
+```
+
+引入使用模块
+
+```js
+require(['module1', 'module2'], function(m1, m2) {
+  //使用m1,m2
+});
+```
+
+#### 实现
+
+[Require.js](http://www.requirejs.cn/)
+
+[Javascript 模块化编程（三）：require.js 的用法](http://www.ruanyifeng.com/blog/2012/11/require_js.html)
+
+### CMD
+
+专门用于浏览器端, 模块的加载是异步的
+
+模块使用时才会加载执行
+
+#### 语法
+
+定义暴露模块
+
+```js
+//定义没有依赖的模块
+define(function(require, exports, module) {
+  exports.xxx = value;
+  module.exports = value;
+});
+
+//定义有依赖的模块
+define(function(require, exports, module) {
+  //引入依赖模块(同步)
+  var module2 = require('./module2');
+  //引入依赖模块(异步)
+  require.async('./module3', function(m3) {});
+  //暴露模块
+  exports.xxx = value;
+});
+```
+
+引入使用模块
+
+```js
+define(function(require) {
+  var m1 = require('./module1');
+  var m4 = require('./module4');
+  m1.show();
+  m4.show();
+});
+```
+
+#### 实现
+
+[Sea.js](http://www.zhangxinxu.com/sp/seajs/)
+
+### ES6 Module
+
+依赖模块需要编译打包处理
+
+#### 语法
+
+导出模块
+
+```js
+//分多次导出模块的多个部分
+
+export class Emp {}
+
+export function fun() {}
+
+export var person = {};
+
+//一次导出模块的多个部分
+
+class Emp {}
+
+function fun() {}
+
+var person = {};
+
+export { Emp, fun, person };
+
+//default导出(只能有一个)
+
+export default {};
+```
+
+引入模块
+
+```js
+import defaultModule from './myModule'; //导入默认的
+
+import { Emp } from './myModule'; //导入指定的一个
+
+import { Emp, person } from './myModule'; //导入指定的多个
+
+import * as allFromModule from './myModule'; //导入所有
+```
+
+### AMD 和 CMD 区别
+
+1. 对于依赖的模块，AMD 是提前执行，CMD 是延迟执行。不过 RequireJS 从 2.0 开始，也改成了可以延迟执行（根据写法不同，执行的方式不同）
+2. CMD 推崇就近依赖，AMD 推崇依赖前置。
+
+```js
+//CMD 的方式
+define(function(require, exprots, module) {
+  var a = require('./a');
+  a.dosmting();
+  //省略 1W 行
+  var b = require('./b');
+  b.dosmting();
+});
+
+//AMD 的方式
+define(['./a', './b'], function(a, b) {
+  a.dosmting();
+  //省略 1W 行
+  b.dosmting();
+});
+```
+
+以上 AMD 的写法是官方推崇的方式，但是同时也支持 CMD 的写法
+
+3. AMD 支持全局 require、局部 require，但是 CMD 不支持全局 require，所以 CMD 没有全局 API 而 AMD 有
+
+### CommonJS 和 ES6 Module 的区别
+
+1. CommonJS : `module.exports(批量)，exports` 导出，`require` 导入
+   ES6 : `export` 导出，`import` 导入
+
+2. CommonJS：动态引入，执行时引入，可以写在判断里
+   ES6 Module：静态引入，编译时引入；只有 ES6 Module 才能静态分析，实现 Tree-Shaking
+
+3. CommonJS 不会提升 require
+   ES6 在编译期间会将所有 import 提升到顶部，
+
+4. CommonJS 导出的是一个值拷贝，会对加载结果进行缓存，一旦内部再修改这个值，则不会同步到外部，如果想更新值，必须重新导入一次
+   ES6 是导出的一个引用，导入导出的值都指向同一个内存地址，所以导入值会跟随导出值变化
+
+5. CommonJS ：顶层的 this 指向当前
+   ES6 ：顶层 this 指向 undefined
+
+6. CommonJS：同步导入，因为用于服务端，文件都在本地，同步导入即使卡住主线程影响也不大
+
+   ES6 Module：异步导入，因为用于浏览器，需要下载文件，如果也采用同步导入会对渲染有很大影响
+
+7. ES6 Module 兼容性不好，在 webpack 中会经过 Babel 编译成 require/exports 来执行的
 
 ## **事件**
 
@@ -2196,52 +2599,547 @@ function cancelHandler(event) {
 
 ## **设计模式**
 
-### 单例模式
+[前端需要了解的 9 种设计模式](https://segmentfault.com/a/1190000022396503#item-4-3)
 
-一个类只有一个实例
+设计模式是对软件设计开发过程中反复出现的某类问题的通用解决方案
 
-### 观察者模式和发布订阅模式
+设计模式更多的是指导思想和方法论，而不是现成的代码，当然每种设计模式都有每种语言中的具体实现方式。
 
-![](/assets/img/观察者和发布订阅者.png)
+### 设计模式原则
 
-发布订阅模式其实属于广义上的观察者模式
+#### S-Single Responsibility Principle 单一职责原则
 
-在观察者模式中，观察者需要直接订阅目标事件。在目标发出内容改变的事件后，直接接收事件并作出响应。
+- 一个程序只做一件事
+- 如果功能过于复杂就拆分开，每个部分保持独立
 
-而在发布订阅模式中，发布者和订阅者之间多了一个调度中心。调度中心一方面从发布者接收事件，另一方面向订阅者发布事件，订
-阅者需要在调度中心中订阅事件。通过调度中心实现了发布者和订阅者关系的解耦。使用发布订阅者模式更利于我们代码的可维护性。
+#### O-OpenClosed Principle 开放封闭原则
+
+- 对扩展开放，对修改封闭
+- 增加需求时，扩展新代码，而非修改已有代码
+
+#### L-Liskov Substitution Principle 里氏替换原则
+
+- 子类能覆盖父类
+- 父类能出现的地方子类就能出现
+
+#### I-Interfack Segregation Principle 接口隔离原则
+
+- 保持接口的单一独立
+- 类似单一职责原则，这里更关注接口
+
+#### D-Dependency Inversion Principle 依赖倒转原则
+
+- 面向接口编程，依赖于抽象而不依赖具体
+- 使用方只管据接口而不依赖于具体
+
+### 创建型(Creational Patterns)
+
+#### **工厂模式(Factory Pattern)**
+
+工厂模式定义一个用于创建对象的接口，这个接口由子类决定实例化哪一个类。
+
+该模式使一个类的实例化延迟到了子类。而子类可以重写接口方法以便创建的时候指定自己的对象类型。
+
+当构造函数过多不方便管理，且需要创建的对象之间存在某些关联（有同一个父类、实现同一个接口等）时，不妨使用工厂模式。
+
+工厂模式提供一种集中化、统一化的方式，避免了分散创建对象导致的代码重复、灵活性差的问题。
+
+场景：
+
+1.  JQuery 的`$()`就是一个工厂函数，它根据传入参数的不同创建元素或者去寻找上下文中的元素，创建成相应的 jQuery 对象
 
 ```js
-class events {
+class jQuery {
+  constructor(selector) {
+    super(selector);
+  }
+  add() {}
+  // 此处省略若干API
+}
+window.$ = function(selector) {
+  return new jQuery(selector);
+};
+```
+
+2. React.createElement
+
+```js
+class Vnode (tag,attrs,children){
+  //...
+}
+React.createElement=function(tag,attrs,children){
+  return new Vnode(tag,attrs,children)
+}
+```
+
+3. Vue 异步组件
+
+在大型应用中，我们可能需要将应用分割成小一些的代码块，并且只在需要的时候才从服务器加载一个模块。
+
+为了简化，Vue 允许你以一个工厂函数的方式定义你的组件，这个工厂函数会异步解析你的组件定义。
+
+Vue 只有在这个组件需要被渲染的时候才会触发该工厂函数，且会把结果缓存起来供未来重渲染。
+
+```js
+Vue.component('async-example', function(resolve, reject) {
+  setTimeout(function() {
+    // 向 `resolve` 回调传递组件定义
+    resolve({
+      template: '<div>I am async!</div>',
+    });
+  }, 1000);
+});
+```
+
+#### **单例模式(Singleton Pattern)**
+
+一个类只有一个实例，并提供一个访问它的全局访问点
+
+当需要一个对象去贯穿整个系统执行某些任务时，单例模式就派上了用场。
+
+除此之外的场景尽量避免单例模式的使用，因为单例模式会引入全局状态，而一个健康的系统应该避免引入过多的全局状态。
+
+场景：
+
+1. Jquery 的`$`
+
+```js
+if (window.jQuery != null) {
+  return window.jQuery;
+} else {
+  //初始化
+}
+```
+
+2. 登录框/购物车
+
+```js
+class LoginForm {
   constructor() {
-    this.topics = {};
+    this.state = 'hide';
   }
-  subscribe(type, fn) {
-    if (!this.topics.hasOwnProperty(type)) {
-      this.topics[type] = [];
+  show() {
+    if (this.state === 'show') {
+      alert('已经显示');
+      return;
     }
-    topics[type].push(fn);
+    this.state = 'show';
+    console.log('登录框显示成功');
   }
-  // 发布事件，触发观察者回调事件
-  publish(type, ...args) {
-    if (this.topics.hasOwnProperty(type)) {
-      this.topics[type].forEach((fn) => fn(...args));
+  hide() {
+    if (this.state === 'hide') {
+      alert('已经隐藏');
+      return;
     }
+    this.state = 'hide';
+    console.log('登录框隐藏成功');
   }
-  // 移除主题的一个观察者的回调事件
-  remove(type, fn) {
-    if (!this.topics.hasOwnProperty(type)) return;
-    let index = this.topics[type].indexOf(fn);
-    this.topics[type].splice(index, 1);
-  }
-  // 移除主题的所有观察者的回调事件
-  removeAll(type) {
-    if (this.topics.hasOwnProperty(type)) {
-      topics[type] = [];
+}
+LoginForm.getInstance = (function() {
+  let instance;
+  return function() {
+    if (!instance) {
+      instance = new LoginForm();
     }
+    return instance;
+  };
+})();
+let obj1 = LoginForm.getInstance();
+obj1.show();
+let obj2 = LoginForm.getInstance();
+obj2.hide();
+console.log(obj1 === obj2);
+```
+
+3. vuex 和 redux 中的 store
+
+#### 原型模式
+
+原型模式（prototype）是指用原型实例指向创建对象的种类，并且通过拷贝这些原型创建新的对象。
+
+原型模式，就是创建一个共享的原型，通过拷贝这个原型来创建新的类，用于创建重复的对象，带来性能上的提升。
+
+场景：
+
+1. Object.create()
+
+```js
+```
+
+#### 抽象工厂模式
+
+#### 建造者模式
+
+### 结构型(Structural Patterns)
+
+#### **适配器模式**
+
+将一个类的接口转化为另外一个接口，以满足用户需求，使类之间接口不兼容问题通过适配器得以解决。
+场景：
+
+1. 整合第三方 SDK
+2. 封装旧接口
+
+```js
+// 自己封装的ajax， 使用方式如下
+ajax({
+  url: '/getData',
+  type: 'Post',
+  dataType: 'json',
+  data: {
+    test: 111,
+  },
+}).done(function() {});
+// 因为历史原因，代码中全都是：
+// $.ajax({....})
+// 做一层适配器
+var $ = {
+  ajax: function(options) {
+    return ajax(options);
+  },
+};
+```
+
+3. Vue 中的 compute
+
+```html
+<template>
+  <div id="example">
+    <p>Original message: "{{ message }}"</p>
+    <!-- Hello -->
+    <p>Computed reversed message: "{{ reversedMessage }}"</p>
+    <!-- olleH -->
+  </div>
+</template>
+<script type="text/javascript">
+  export default {
+    name: 'demo',
+    data() {
+      return {
+        message: 'Hello',
+      };
+    },
+    computed: {
+      reversedMessage: function() {
+        return this.message
+          .split('')
+          .reverse()
+          .join('');
+      },
+    },
+  };
+</script>
+```
+
+#### **装饰器模式**
+
+动态地给某个对象添加一些额外的职责，，是一种实现继承的替代方案
+
+在不改变原对象的基础上，通过对其进行包装扩展，使原有对象可以满足用户的更复杂需求，而不会影响从这个类中派生的其他对象
+场景：
+
+1. ES7 decorators
+
+2. core-decorators
+
+#### **代理模式(Proxy Pattern)**
+
+为一个对象提供一个代用品或占位符，以便控制对它的访问
+
+当访问一个对象本身的代价太高（比如太占内存、初始化时间太长等）或者需要增加额外的逻辑又不修改对象本身时便可以使用代理
+
+代理模式可以解决以下的问题：
+
+增加对一个对象的访问控制
+当访问一个对象的过程中需要增加额外的逻辑
+
+要实现代理模式需要三部分：
+
+Real Subject：真实对象
+Proxy：代理对象
+Subject 接口：Real Subject 和 Proxy 都需要实现的接口，这样 Proxy 才能被当成 Real Subject 的“替身”使用
+
+场景：
+
+1. HTML 事件代理
+2. ES6 proxy
+3. jQuery.proxy()
+
+适配器模式：提供一个不同的接口（如不同版本的插头）
+代理模式：提供一摸一样的接口
+
+装饰器模式：扩展功能，原有功能不变且可直接使用
+代理模式：显示原有功能，但是经过限制之后
+
+#### **外观模式(Facade Pattern)**
+
+为子系统的一组接口提供一个一致的界面，定义了一个高层接口，这个接口使子系统更加容易使用
+
+外观设计模式就是把多个子系统中复杂逻辑进行抽象，从而提供一个更统一、更简洁、更易用的 API
+
+JQuery 就把复杂的原生 DOM 操作进行了抽象和封装，并消除了浏览器之间的兼容问题，从而提供了一个更高级更易用的版本
+
+场景：
+
+1. 兼容浏览器事件绑定
+
+```js
+// 绑定事件
+function addEvent(element, event, handler) {
+  if (element.addEventListener) {
+    element.addEventListener(event, handler, false);
+  } else if (element.attachEvent) {
+    element.attachEvent('on' + event, handler);
+  } else {
+    element['on' + event] = fn;
+  }
+}
+// 取消绑定
+function removeEvent(element, event, handler) {
+  if (element.removeEventListener) {
+    element.removeEventListener(event, handler, false);
+  } else if (element.detachEvent) {
+    element.detachEvent('on' + event, handler);
+  } else {
+    element['on' + event] = null;
   }
 }
 ```
+
+2. 封装接口
+
+```js
+let myEvent = {
+  // ...
+  stop: (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  },
+};
+```
+
+#### 桥接模式
+
+桥接模式（Bridge）将抽象部分与它的实现部分分离，使它们都可以独立地变化。
+
+```js
+class Color {
+  constructor(name) {
+    this.name = name;
+  }
+}
+class Shape {
+  constructor(name, color) {
+    this.name = name;
+    this.color = color;
+  }
+  draw() {
+    console.log(`${this.color.name} ${this.name}`);
+  }
+}
+//测试
+let red = new Color('red');
+let yellow = new Color('yellow');
+let circle = new Shape('circle', red);
+circle.draw();
+let triangle = new Shape('triangle', yellow);
+triangle.draw();
+```
+
+#### 组合模式
+
+将对象组合成树形结构，以表示“整体-部分”的层次结构。
+
+通过对象的多态表现，使得用户对单个对象和组合对象的使用具有一致性。
+
+```js
+class TrainOrder {
+  create() {
+    console.log('创建火车票订单');
+  }
+}
+class HotelOrder {
+  create() {
+    console.log('创建酒店订单');
+  }
+}
+
+class TotalOrder {
+  constructor() {
+    this.orderList = [];
+  }
+  addOrder(order) {
+    this.orderList.push(order);
+    return this;
+  }
+  create() {
+    this.orderList.forEach((item) => {
+      item.create();
+    });
+    return this;
+  }
+}
+// 可以在购票网站买车票同时也订房间
+let train = new TrainOrder();
+let hotel = new HotelOrder();
+let total = new TotalOrder();
+total
+  .addOrder(train)
+  .addOrder(hotel)
+  .create();
+```
+
+#### 享元模式
+
+运用共享技术有效地支持大量细粒度对象的复用。系统只使用少量的对象，而这些对象都很相似，状态变化很小，可以实现对象的多次复用。由于享元模式要求能够共享的对象必须是细粒度对象，因此它又称为轻量级模式，它是一种对象结构型模式
+
+### 行为型(Behavioral Patterns)
+
+#### **观察者模式**
+
+被观察对象（subject）维护一组观察者（observer），当被观察对象状态改变时，通过调用观察者的某个方法将这些变化通知到观察者。
+
+定义了一种一对多的关系，让多个观察者对象同时监听某一个主题对象，这个主题对象的状态发生变化时就会通知所有的观察者对象，使它们能够自动更新自己，当一个对象的改变需要同时改变其它对象，并且它不知道具体有多少对象需要改变的时候，就应该考虑使用观察者模式。
+
+观察者模式中 Subject 对象一般需要实现以下 API：
+
+subscribe(): 接收一个观察者 observer 对象，使其订阅自己
+unsubscribe(): 接收一个观察者 observer 对象，使其取消订阅自己
+fire(): 触发事件，通知到所有观察者
+
+场景：
+
+1. DOM 事件
+
+```js
+document.body.addEventListener('click', function() {
+  console.log('hello world!');
+});
+document.body.click();
+```
+
+2. jQuery.callback
+
+3. nodeJS 自定义事件
+
+4. nodeJS 处理 http 请求，多进程通信
+
+5. Vue 和 React 组件生命周期触发
+
+6. Vue 的 watch
+
+#### 迭代器模式
+
+迭代器模式解决了以下问题：
+
+提供一致的遍历各种数据结构的方式，而不用了解数据的内部结构
+提供遍历容器（集合）的能力而无需改变容器的接口
+
+#### 策略模式
+
+定义一系列的算法，把它们一个个封装起来，并且使它们可以互相替换
+
+对象有某个行为，但是在不同的场景中，该行为有不同的实现算法
+
+策略模式有以下优势：
+
+方便在运行时切换算法和策略
+代码更简洁，避免使用大量的条件判断
+关注分离，每个 strategy 类控制自己的算法逻辑，strategy 和其使用者之间也相互独立
+
+场景：
+
+1. 登录鉴权
+
+鉴权算法取决于用户的登录方式是手机、邮箱或者第三方的微信登录等等，而且登录方式也只有在运行时才能获取，获取到登录方式后再动态的配置鉴权策略。
+
+所有这些策略应该实现统一的接口，或者说有统一的行为模式。Node 生态里著名的鉴权库 Passport.js API 的设计就应用了策略模式。
+
+```js
+//passport.js
+/**
+ * 登录控制器
+ */
+function LoginController() {
+  this.strategy = undefined;
+  this.setStrategy = function(strategy) {
+    this.strategy = strategy;
+    this.login = this.strategy.login;
+  };
+}
+/**
+ * 用户名、密码登录策略
+ */
+function LocalStragegy() {
+  this.login = ({ username, password }) => {
+    console.log(username, password);
+    // authenticating with username and password...
+  };
+}
+/**
+ * 手机号、验证码登录策略
+ */
+function PhoneStragety() {
+  this.login = ({ phone, verifyCode }) => {
+    console.log(phone, verifyCode);
+    // authenticating with hone and verifyCode...
+  };
+}
+/**
+ * 第三方社交登录策略
+ */
+function SocialStragety() {
+  this.login = ({ id, secret }) => {
+    console.log(id, secret);
+    // authenticating with id and secret...
+  };
+}
+const loginController = new LoginController();
+// 调用用户名、密码登录接口，使用LocalStrategy
+app.use('/login/local', function(req, res) {
+  loginController.setStrategy(new LocalStragegy());
+  loginController.login(req.body);
+});
+// 调用手机、验证码登录接口，使用PhoneStrategy
+app.use('/login/phone', function(req, res) {
+  loginController.setStrategy(new PhoneStragety());
+  loginController.login(req.body);
+});
+// 调用社交登录接口，使用SocialStrategy
+app.use('/login/social', function(req, res) {
+  loginController.setStrategy(new SocialStragety());
+  loginController.login(req.body);
+});
+```
+
+#### 模板方法模式
+
+#### 职责链模式
+
+#### 命令模式
+
+#### 备忘录模式
+
+#### 状态模式
+
+#### 访问者模式
+
+访问者模式是一种将算法与对象结构分离的设计模式，通俗点讲就是：访问者模式让我们能够在不改变一个对象结构的前提下能够给该对象增加新的逻辑，新增的逻辑保存在一个独立的访问者对象中。访问者模式常用于拓展一些第三方的库和工具。
+
+访问者模式的实现有以下几个要素：
+
+Visitor Object：访问者对象，拥有一个 visit() 方法
+Receiving Object：接收对象，拥有一个 accept() 方法
+visit(receivingObj)：用于 Visitor 接收一个 Receiving Object
+accept(visitor)：用于 Receving Object 接收一个 Visitor，并通过调用 Visitor 的 visit() 为其提供获取 Receiving Object 数据的能力
+
+#### 中介者模式
+
+在中介者模式中，中介者（Mediator）包装了一系列对象相互作用的方式，使得这些对象不必直接相互作用，而是由中介者协调它们之间的交互，从而使它们可以松散偶合。当某些对象之间的作用发生改变时，不会立即影响其他的一些对象之间的作用，保证这些作用可以彼此独立的变化。
+
+中介者模式和观察者模式有一定的相似性，都是一对多的关系，也都是集中式通信，不同的是中介者模式是处理同级对象之间的交互，而观察者模式是处理 Observer 和 Subject 之间的交互。中介者模式有些像婚恋中介，相亲对象刚开始并不能直接交流，而是要通过中介去筛选匹配再决定谁和谁见面。中介者模式比较常见的应用比如聊天室，聊天室里面的人之间并不能直接对话，而是通过聊天室这一媒介进行转发。
+
+#### 解释器模式
 
 ## **基本规范**
 
@@ -2258,3 +3156,4 @@ class events {
 6. for 循环必须使用大括号。
 
 7. if 语句必须使用大括号。
+   F

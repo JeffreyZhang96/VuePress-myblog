@@ -1,3 +1,5 @@
+[Web 性能|MDN](https://developer.mozilla.org/zh-CN/docs/Web/Performance)
+
 ## **减少请求数量**
 
 ### 合并文件
@@ -175,7 +177,7 @@ webpack 提供了两个类似的技术，优先选择的方式是使用符合 EC
 
 懒加载实现原理：先将 img 标签的 src 链接设为同一张图片（比如空白图片），然后给 img 标签设置自定义属性（比如 data-src）,然后将真正的图片地址存储在 data-src 中，当 JS 监听到该图片元素进入可视窗口时，将自定义属性中的地址存储到 src 属性中。达到懒加载的效果。
 
-![](/assets/img/图片懒加载实现原理.jpg)
+![](/图片懒加载实现原理.jpg)
 
 `offsetTop-scrollTop<clientHeight`，则图片进入了可视区内，则被请求
 
@@ -208,7 +210,7 @@ prefetch 告诉浏览器加载下一页面可能会用到的资源，可以加�
 
 ## **渲染过程优化**
 
-### 重绘和回流（重排）
+### 重绘
 
 [从浏览器渲染原理，浅谈回流重绘与性能优化](https://www.cnblogs.com/xiahj/p/11777786.html)
 
@@ -216,59 +218,68 @@ prefetch 告诉浏览器加载下一页面可能会用到的资源，可以加�
 
 - 回流：当渲染树中的元素的布局（如：尺寸、位置、显示隐藏）发生改变时，产生回流
 
-- 回流必将引起重绘，而重绘不一定会引起回流
-
-- 回流会导致渲染树需要重新计算，开销比重绘大，要尽量避免回流的产生
-
-回流的产生：
-
-1. 页面首次渲染
-2. 浏览器窗口尺寸改变
-3. 改变字体
-4. 内容变化，比如用户在 input 框中输入文字
-5. 激活 CSS 伪类，比如 :hover
-6. JS 操作 DOM
-7. 计算属性
-   - `offsetTop`、`offsetLeft`、`offsetWidth`、`offsetHeight`
-   - `scrollTop`、`scrollLeft`、`scrollWidth`、`scrollHeight`
-   - `clientTop`、`clientLeft`、`clientWidth`、`clientHeight`
-   - `width`、`height`
-   - `getComputedStyle()`
-   - `getBoundingClientRect()`
-
 重绘的产生：
 
 1. color,background-color
 2. visibility
 3. outline
 
-4. CSS
+### 回流（重排）
 
-   - **使用 `transform` 替代 `top`**
+当渲染树中部分或全部元素的尺寸、结构、或某些属性发生改变时，浏览器重新渲染部分或全部文档的过程称为回流
 
-   - **使用 `visibility` 替换 `display: none`** ，因为前者只会引起重绘，后者会引发回流（改变了布局)
+- 回流必将引起重绘，而重绘不一定会引起回流
 
-   - **避免使用`table`布局**，可能很小的一个小改动会造成整个 `table` 的重新布局。
+- 回流会导致渲染树需要重新计算，开销比重绘大，要尽量避免回流的产生
 
-   - **尽可能在`DOM`树的最末端改变`class`**，回流是不可避免的，但可以减少其影响。尽可能在 DOM 树的最末端改变 class，可以限制了回流的范围，使其影响尽可能少的节点。
+#### 产生
 
-   - **避免设置多层内联样式**，css 选择符**从右往左**匹配查找，避免节点层级过多,保证**层级扁平**。
+1. 页面首次渲染
+2. 浏览器窗口尺寸
+3. 元素的位置和尺寸
+4. 字体大小
+5. 元素内容（文字数量或者图片大小）
+6. 激活 CSS 伪类，比如 :hover
+7. JS 添加删除可见的 DOM 元素
+8. 计算属性
+   - `offsetTop`、`offsetLeft`、`offsetWidth`、`offsetHeight`
+   - `scrollTop`、`scrollLeft`、`scrollWidth`、`scrollHeight`
+   - `clientTop`、`clientLeft`、`clientWidth`、`clientHeight`
+   - `scrollIntoView()`、`scrollIntoViewIfNeeded()`
+   - `width`、`height`
+   - `getComputedStyle()`
+   - `getBoundingClientRect()`
+   - `scrollTo()`
 
-   - **将动画效果应用到`position`属性为`absolute`或`fixed`的元素上**，避免影响其他元素的布局，这样只是一个重绘，而不是回流，同时，控制动画速度可以选择 `requestAnimationFrame`。
+### 重绘/回流避免方法
 
-   - **避免使用`CSS`表达式**，可能会引发回流。
+#### CSS
 
-   - **CSS3 硬件加速**可以让`transform`、`opacity`、`filters`这些动画不会引起回流重绘 。但是对于动画的其它属性，比如`background-color`这些，还是会引起回流重绘的，不过它还是可以提升这些动画的性能。
+- 使用 `transform` 替代 `top`
 
-5. JS
+- 使用 `visibility` 替换 `display: none` ，因为前者只会引起重绘，后者会引发回流（改变了布局）
 
-   - **避免频繁操作样式**，最好一次性重写`style`属性，或者将样式列表定义为`class`并一次性更改`class`属性。
+- 避免使用`table`布局，可能很小的一个小改动会造成整个 `table` 的重新布局。
 
-   - **避免频繁操作`DOM`**，创建一个`documentFragment`，在它上面应用所有`DOM操作`，最后再把它添加到文档中。
+- 尽可能在`DOM`树的最末端改变`class`，回流是不可避免的，但可以减少其影响。尽可能在 DOM 树的最末端改变 class，可以限制了回流的范围，使其影响尽可能少的节点。
 
-   - **避免频繁读取会引发回流/重绘的属性**，如果确实需要多次使用，就用一个变量缓存起来。
+- 避免设置多层内联样式，css 选择符从右往左匹配查找，避免节点层级过多,保证层级扁平。
 
-   - **对具有复杂动画的元素使用绝对定位**，使它脱离文档流，否则会引起父元素及后续元素频繁回流。
+- 将动画效果应用到`position`属性为`absolute`或`fixed`的元素上，避免影响其他元素的布局，这样只是一个重绘，而不是回流，同时，控制动画速度可以选择 `requestAnimationFrame`。
+
+- 避免使用`CSS`表达式，可能会引发回流。
+
+- CSS3 硬件加速可以让`transform`、`opacity`、`filters`这些动画不会引起回流重绘 。但是对于动画的其它属性，比如`background-color`这些，还是会引起回流重绘的，不过它还是可以提升这些动画的性能。
+
+#### JS
+
+- 避免频繁操作样式，最好一次性重写`style`属性，或者将样式列表定义为`class`并一次性更改`class`属性。
+
+- 避免频繁操作`DOM`，创建一个`documentFragment`，在它上面应用所有`DOM操作`，最后再把它添加到文档中。
+
+- 避免频繁读取会引发回流/重绘的属性，如果确实需要多次使用，就用一个变量缓存起来。
+
+- 对具有复杂动画的元素使用绝对定位，使它脱离文档流，否则会引起父元素及后续元素频繁回流。
 
 ### 样式设置
 
@@ -331,29 +342,21 @@ HTML 中标签元素越多，标签的层级越深，浏览器解析 DOM 并绘�
 
 及时消除对象引用，清除定时器，清除事件监听器，创建最小作用域变量，可以及时回收内存
 
-### **防抖节流**
+### 防抖
 
-#### 防抖是将多次执行变为最后一次执行
+一个频繁触发的函数，在规定时间内，只让最后一次生效
 
 ```js
-//debounce是直接调用this指向window（不考虑严格模式）
-function debounce(fn, delay) {
-  let timer = null;
-  //Input事件调用的函数，相当于obj调用函数，this指向Input arguments是隐式传入的
-  return function() {
-    if (timer) {
-      clearTimeout(timer);
-    }
-    //此时的箭头函数的this和arguments都是从外部继承来的
-    //如果用浦东函数就要用词法作用域var that = this var arg = arguments
+function debounce(f, wait) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
     timer = setTimeout(() => {
-      //使得传入的回调函数的this 指向Input这个元素对象 arguments是该事件的详情
-      fn.apply(this, arguments);
-      console.log(this);
-      timer = null;
-    }, delay);
+      f(...args);
+    }, wait);
   };
 }
+
 var input = document.getElementById('input');
 input.addEventListener(
   'keyup',
@@ -368,22 +371,26 @@ input.addEventListener(
 
 应用场景：
 
-- search 搜索联想，用户在不断输入值时，用防抖来节约请求资源
+- 登录、发短信等按钮避免用户点击太快，以致于发送了多次请求，需要防抖
+- 搜索联想，用户在不断输入值时，用防抖来节约请求资源
 - window 触发 resize 的时候，不断的调整浏览器窗口大小会不断的触发这个事件，用防抖来让其只触发一次
+- 文本编辑器实时保存，当无任何更改操作一秒后进行保存
 
-#### 节流是将多次执行变成每隔一段时间执行
+### 节流
+
+一个函数执行一次后，只有大于设定的执行周期后才会执行第二次
 
 ```js
-function throttle(fn, delay) {
-  let timer = null;
-  return function() {
+function throttle(f, wait) {
+  let timer;
+  return (...args) => {
     if (timer) {
       return;
     }
     timer = setTimeout(() => {
-      fn.apply(this, arguments); //this=>div arguements=>e
+      f(...args);
       timer = null;
-    }, delay);
+    }, wait);
   };
 }
 
@@ -398,8 +405,8 @@ div.addEventLisener(
 
 应用场景：
 
-1. 鼠标不断点击触发，mousedown(单位时间内只触发一次)
-2. 监听滚动事件，比如是否滑到底部自动加载更多，用 throttle 来判断
+- scroll 事件，每隔一秒计算一次位置信息等
+- 浏览器播放事件，每个一秒计算一次进度信息等
 
 ## **性能更好的 API**
 
@@ -449,4 +456,12 @@ id 选择器（#myid）
 - 后端开启 gzip 静态文件压缩
 - 合理设置 HTTP 缓存
 - dns 预解析，CDN 缓存增加并发数
-- 代码分割，路由懒加载
+- 代码分割，路由懒加载[四年前端带你理解路由懒加载的原理](https://segmentfault.com/a/1190000022846552)
+
+## **白屏优化**
+
+[首页白屏优化实践](https://juejin.im/post/6844903941713428487)
+
+[首屏时间(FCP) VS 白屏时间(FP)](https://juejin.im/post/6844904112107044872)
+
+[前端性能监控方案（首屏、白屏时间等）](https://juejin.im/post/6844904020482457613)

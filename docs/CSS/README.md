@@ -56,10 +56,6 @@ ul {
 1. 减少整体图片的质量，网页的图片加载速度快
 2. 减少图片的请求次数，加快网页的打开
 
-### DOM 层级顺序与 z-index
-
-[DOM 层级顺序与 z-index](https://segmentfault.com/a/1190000014382426)
-
 ### src 与 href 的区别
 
 src
@@ -113,11 +109,13 @@ href(Hypertext Reference)指向网络资源所在位置，建立和当前元素�
 
 继承属性：
 
-- font 系列，如 font-weight， font-style， color 等
+- font(font-weight,font-style,font-family,color)
 - visibility
 - line-height
+
   非继承属性：
 
+- border, padding, margin, width, height
 - background
 - opacity
 
@@ -174,6 +172,8 @@ href(Hypertext Reference)指向网络资源所在位置，建立和当前元素�
 
 ## **盒模型**
 
+[https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-sizing|MDN](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-sizing)
+
 ### marign 折叠
 
 块级元素的上外边距（margin-top）与下外边距（margin-bottom）有时会合并为单个外边距
@@ -222,11 +222,11 @@ href(Hypertext Reference)指向网络资源所在位置，建立和当前元素�
 
 ## **选择器**
 
-[CSS 选择器](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Selectors)
+[MDN|CSS 选择器](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Selectors)
 
 ### 选择器种类
 
-1. id 选择器（ ##myid）
+1. id 选择器（ #myid）
 2. 类选择器（.myclassname）
 3. 标签选择器（div, h1, p）
 4. 后代选择器（h1 p）
@@ -238,13 +238,17 @@ href(Hypertext Reference)指向网络资源所在位置，建立和当前元素�
 10. 伪元素选择器（::before、::after）
 11. 通配符选择器（ \* ）
 
-### a 标签上四个伪类的使用顺序
+### 伪类
+
+[MDN|伪类](https://developer.mozilla.org/zh-CN/docs/Web/CSS/Pseudo-classes)
+
+#### a 标签上四个伪类的使用顺序
 
 link > visited > hover > active
 
 伪类的优先级是一样的，所以后出现的伪类会覆盖先出现的伪类（同时激活）
 
-### 伪元素和伪类的区别
+#### 伪元素和伪类的区别
 
 css 引入伪类和伪元素概念是为了格式化文档树以外的信息。也就是说，伪类和伪元素是用来修饰不在文档树中的部分，比如，一句
 话中的第一个字母，或者是列表中的第一个元素。
@@ -269,7 +273,7 @@ fore 来在一个元素前增加一些文本，并为这些文本添加样式。
 - 权重相同时，与元素距离近的选择器生
 
 一句话总结：
-!important > 行内样式 > ID 选择器 > (类选择器 | 属性选择器 | 伪类选择器 ) > (元素选择器|伪元素选择器) > `*`> 继承
+!important > 行内（内联）样式 >内部样式>外部样式> ID 选择器 > (类选择器 | 属性选择器 | 伪类选择器 ) > (元素选择器|伪元素选择器) > `*`> 继承
 
 ## **position**
 
@@ -306,11 +310,34 @@ fore 来在一个元素前增加一些文本，并为这些文本添加样式。
 - 使块元素默认宽根据内容决定（让块具备内联特性）
 - 相对于整个浏览器窗口进行偏移，不受浏览器滚动条的影响
 
-5. sticky：粘性定位
+5. sticky：粘性定位 粘性定位可以被认为是相对定位和固定定位的混合。元素在跨越特定阈值前为相对定位，之后为固定定位。须指定 top, right, bottom 或 left 四个阈值其中之一，才可使粘性定位生效。否则其行为与相对定位相同。
 
 [**CSS 定位详解|阮一峰**](http://www.ruanyifeng.com/blog/2019/11/css-position.html)
 
 ## **display**
+
+[MDN|display](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display)
+
+|         值         |                            作用                             |
+| :----------------: | :---------------------------------------------------------: |
+|        none        |                    使用后元素将不会显示                     |
+|        grid        |                 定义一个容器属性为网格布局                  |
+|        flex        |                      定义一个弹性布局                       |
+|       block        |      使用后元素将变为块级元素显示，元素前后带有换行符       |
+|       inline       |  display 默认值。使用后原色变为行内元素显示，前后无换行符   |
+|     list-item      |                   使用后元素作为列表显示                    |
+|       run-in       |      使用后元素会根据上下文作为块级元素或行内元素显示       |
+|       table        |  使用后将作为块级表格来显示（类似<table>），前后带有换行符  |
+|    inline-table    | 使用后元素将作为内联表格显示（类似<table>），前后没有换行符 |
+|  table-row-group   |      元素将作为一个或多个行的分组来显示（类似<tbody>）      |
+| table-hewder-group |      元素将作为一个或多个行的分组来表示（类似<thead>）      |
+| table-footer-group |        元素将作为一个或多个行分组显示（类似<tfoot>）        |
+|     table-row      |            元素将作为一个表格行显示（类似<tr>）             |
+| table-column-group |     元素将作为一个或多个列的分组显示（类似<colgroup>）      |
+|    table-column    |           元素将作为一个单元格列显示（类似<col>）           |
+|     table-cell     |       元素将作为一个表格单元格显示（类似<td>和<th>）        |
+|   table-caption    |         元素将作为一个表格标题显示（类似<caption>）         |
+|      inherit       |            规定应该从父元素集成 display 属性的值            |
 
 ## **float**
 
@@ -336,11 +363,11 @@ float 特性:加浮动的元素，会脱离文档流，会延迟父容器靠左�
 
 2. 嵌套排列：
 
-- 固定宽高：不推荐，不能把高度固定死，不适合做自适应效果。
-- 父元素浮动：不推荐，因为父容器浮动会影响后面的元素。
+- 固定父元素宽高：不推荐，需要子元素宽高已知，不灵活难以维护
+- 父元素浮动：不推荐，因为父容器浮动会影响后面的元素
 - overflow:hidden(BFC 规范)，如果有子元素想溢出，那么会受到影响。
 - display:inline-block(BFC 规范)，不推荐，父容器会影响后面的元素。
-- 设置空标签：不推荐，会多添加一个标签。
+- 设置空标签+clear:both：不推荐，会多添加一个标签
 - ::after 伪元素 ：推荐，是空标签的加强版。(clear 属性只会操作块标签，对内联标签不起作用)
 - before after 双伪元素 display:table
 
@@ -366,6 +393,10 @@ float 特性:加浮动的元素，会脱离文档流，会延迟父容器靠左�
 
 ## **BFC**
 
+[块格式化上下文|MDN](https://developer.mozilla.org/zh-CN/docs/Web/Guide/CSS/Block_formatting_context)
+
+[【果冻公开课】CSS 教程第八课：如何快速理解 BFC|bilibili](https://www.bilibili.com/video/BV16b411H7Pz?from=search&seid=10572345030021014959)
+
 [什么是 BFC](https://www.cnblogs.com/libin-1/p/7098468.html)
 
 BFC 块级格式化上下文，它是一个独立的盒子，并且这个独立的盒子内部布局不受外界影响。
@@ -380,18 +411,36 @@ BFC 布局规则：
 
 ### 触发 BFC 的方式
 
-1. html 根元素
-2. float 属性不为 none
-3. position 为 absolute 或 fixed。
-4. display 为 inline-block, table-cell, table-caption, flex, inline-flex
-5. overflow 不为 visible
+1. 根元素（<html>）
+2. 浮动元素（元素的 float 不是 none）
+3. 绝对定位元素（元素的 position 为 absolute 或 fixed）
+4. 行内块元素（元素的 display 为 inline-block）
+5. 表格单元格（元素的 display 为 table-cell，HTML 表格单元格默认为该值）
+6. 表格标题（元素的 display 为 table-caption，HTML 表格标题默认为该值）
+7. 匿名表格单元格元素（元素的 display 为 table、table-row、 table-row-group、table-header-group、table-footer-group（分别是 HTML table、row、tbody、thead、tfoot 的默认属性）或 inline-table）
+8. overflow 值不为 visible 的块元素
+9. display 值为 flow-root 的元素
+10. contain 值为 layout、content 或 paint 的元素
+11. 弹性元素（display 为 flex 或 inline-flex 元素的直接子元素）
+12. 网格元素（display 为 grid 或 inline-grid 元素的直接子元素）
+13. 多列容器（元素的 column-count 或 column-width 不为 auto，包括 column-count 为 1）
+14. column-span 为 all 的元素始终会创建一个新的 BFC，即使该元素没有包裹在一个多列容器中（标准变更，Chrome bug）。
 
 ### BFC 作用
 
-1. 清除内部浮动
+1. 解决浮动元素令父元素高度塌陷
+
+   清除内部浮动
    原理: 触发父 div 的 BFC 属性，使下面的子 div 都处在父 div 的同一个 BFC 区域之内
-2. 分属于不同的 BFC 时，可以阻止 margin 重叠
-3. 阻止元素被浮动元素覆盖，可用来实现两列布局
+
+2. 分属于不同的 BFC 时，可以阻止垂直方向的[外边距重叠](https://www.bilibili.com/video/BV1DE41197Kc?from=search&seid=8677012940980547065)
+3. 解决自适应布局的问题，阻止元素被浮动元素覆盖，可用来实现两列布局
+
+## **层叠上下文**
+
+[深入理解 CSS 中的层叠上下文和层叠顺序](https://www.zhangxinxu.com/wordpress/2016/01/understand-css-stacking-context-order-z-index/)
+
+[DOM 层级顺序与 z-index](https://segmentfault.com/a/1190000014382426)
 
 ## **居中**
 
@@ -455,6 +504,8 @@ BFC 布局规则：
 #### 已知高度和宽度的元素
 
 1. 设置父元素为相对定位，给子元素设置绝对定位，top: 0; right: 0; bottom: 0; left: 0; margin: auto;
+
+为子元素设置 left:0;right:0;top:0;bottom:0;时，浏览器将给子元素重新分配一个边界框，此时子元素将填充其父元素的所有可用空间，当我们给子元素设置一个 width 或 height，防止子元素占据所有的可用空间，浏览器将根据新的边界框重新计算，再加上 margin:auto,由于被绝对定位，脱离了正常的文档流，浏览器会给 margin-left,margin-right 相同的值，margin-top,margin-bottom 相同的值，使元素块在父元素中水平垂直居中。
 
 2. 设置父元素为相对定位，给子元素设置绝对定位，left: 50%; top: 50%; margin-left: -元素宽度的一半 px; margin-top: -元素高度的一半 px;
 
@@ -558,8 +609,8 @@ BFC 布局规则：
 
 ### 前端动画
 
-- animation 关键帧动画
-- transition 过渡动画
+- animation 关键帧动画[CSS Animations|MDN](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Animations)
+- transition 过渡动画[CSS 变换](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Transitions)
 - JS 原生控制 DOM 位置
 - canvas 绘制动画
 
@@ -723,7 +774,7 @@ Animation-->在这个动画之前，先看 Keyframes 关键帧，支持 animatio
 
 左列定宽，右边自适应
 
-float+margin-left 或者 float+overflow
+1. float+margin-left 或者 float+overflow
 
 ```css
 .aside {
@@ -739,7 +790,7 @@ float+margin-left 或者 float+overflow
 }
 ```
 
-flex ,三个 div,父元素 display flex; 右边 flex:1
+2. flex ,三个 div,父元素 display flex; 右边 flex:1
 
 ```css
     body {
@@ -754,9 +805,9 @@ flex ,三个 div,父元素 display flex; 右边 flex:1
     }
 ```
 
-绝对定位。两个 div。左边 absolute 或者 fixed 右边 margin-left=width
+3. 绝对定位。两个 div。左边 absolute 或者 fixed 右边 margin-left=width
 
-table 布局。三个 div，父元素 display：table，width:100%,table-layout:fixed 子元素 display:table-cell
+4. table 布局。三个 div，父元素 display：table，width:100%,table-layout:fixed 子元素 display:table-cell
 
 ### 三栏布局
 
@@ -1018,36 +1069,68 @@ table 布局。三个 div，父元素 display：table，width:100%,table-layout:
 
 #### 容器属性
 
-flex-direction 主轴的方向，默认 row，从左到右
+`flex-direction` 主轴的方向
 
-flex-wrap 是否换行，默认 nowrap，不换行
+- row（默认值）：主轴为水平方向，起点在左端。
+- row-reverse：主轴为水平方向，起点在右端。
+- column：主轴为垂直方向，起点在上沿。
+- column-reverse：主轴为垂直方向，起点在下沿。
 
-flex-flow 属性是 flex-direction 属性和 flex-wrap 属性的简写形式，默认值为 row nowrap。
+`flex-wrap` 是否换行
 
-justify-content 主轴的布局，默认为 flex-start
+- nowrap（默认）：不换行。
+- wrap：换行，第一行在上方。
+- wrap-reverse：换行，第一行在下方。
 
-align-items 交叉轴的布局，默认为 flex-start
+`flex-flow` 属性是 flex-direction 属性和 flex-wrap 属性的简写形式
 
-align-content 定义了多根轴线的对齐方式。如果项目只有一根轴线，该属性不起作用。
+`justify-content` 属性定义了项目在主轴上的对齐方式
+
+- flex-start（默认值）：左对齐
+- flex-end：右对齐
+- center： 居中
+- space-between：两端对齐，项目之间的间隔都相等。
+- space-around：每个项目两侧的间隔相等。所以，项目之间的间隔比项目与边框的间隔大一倍。
+
+`align-items` 属性定义项目在交叉轴上如何对齐
+
+- stretch（默认值）：如果项目未设置高度或设为 auto，将占满整个容器的高度。
+- flex-start：交叉轴的起点对齐。
+- flex-end：交叉轴的终点对齐。
+- center：交叉轴的中点对齐。
+- baseline: 项目的第一行文字的基线对齐。
+
+`align-content` 定义了多根轴线的对齐方式。如果项目只有一根轴线，该属性不起作用。
+
+- flex-start：与交叉轴的起点对齐。
+- flex-end：与交叉轴的终点对齐。
+- center：与交叉轴的中点对齐。
+- space-between：与交叉轴两端对齐，轴线之间的间隔平均分布。
+- space-around：每根轴线两侧的间隔都相等。所以，轴线之间的间隔比轴线与边框的间隔大一倍。
+- stretch（默认值）：轴线占满整个交叉轴。
 
 #### 项目属性
 
 order 项目的排列顺序。数值越小，排列越靠前，默认 0
 
-flex-grow 项目的放大比例，默认 0，不占剩余空间
+`flex-grow` 项目的放大比例，默认 0，不占剩余空间
 
-flex-shrink 项目的缩小比例，默认 1，如空间不足，该项目将缩小。
+`flex-shrink` 项目的缩小比例，默认 1，如空间不足，该项目将缩小。
 
-flex-basis 主轴上的宽度，默认 auto，即项目的本来大小。
+`flex-basis` 主轴上的宽度，默认 auto，即项目的本来大小。
 
-flex 属性是 flex-grow， flex-shrink 和 flex-basis 的简写，默认值为 0 1 auto。
+`flex` 属性是 flex-grow， flex-shrink 和 flex-basis 的简写，默认值为 0 1 auto
 
-align-self 属性允许单个项目有与其他项目不一样的对齐方式，可覆盖 align-items 属性。默认值为 auto ，表示继承父
+`align-self` 属性允许单个项目有与其他项目不一样的对齐方式，可覆盖 align-items 属性。默认值为 auto ，表示继承父
 元素的 align-items 属性，如果没有父元素，则等同于 stretch。
 
 [《Flex 布局教程：语法篇》](http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html)
 [《Flex 布局教程：实例篇》](http://www.ruanyifeng.com/blog/2015/07/flex-examples.html)
 
+[flex：auto 含义](https://blog.csdn.net/u013060489/article/details/78464249)
+
 ### Grid 网格布局
+
+[Grid|MDN](https://developer.mozilla.org/zh-CN/docs/Glossary/Grid)
 
 [grid 网格布局](https://www.imooc.com/article/28513)

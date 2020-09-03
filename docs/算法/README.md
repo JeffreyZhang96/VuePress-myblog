@@ -197,6 +197,34 @@ var canMeasureWater = function(x, y, z) {
 };
 ```
 
+### 求 1+2+...+n jz64
+
+求 1+2+...+n ，要求不能使用乘除法、for、while、if、else、switch、case 等关键字及条件判断语句（A?B:C）
+
+> &&短路
+
+```js
+var sumNums = function(n) {
+  return n && sumNums(n - 1) + n;
+};
+```
+
+> 对数
+
+```js
+var sumNums = function(n) {
+  return Math.exp(Math.log(n) + Math.log(n + 1) - Math.log(2));
+};
+```
+
+> \*\* >>
+
+```js
+var sumNums = function(n) {
+  return (n ** 2 + n) >> 1;
+};
+```
+
 ## **位运算**
 
 ### 二进制中 1 的个数 jz15
@@ -213,6 +241,19 @@ var hammingWeight = function(n) {
     flag <<= 1;
   }
   return count;
+};
+```
+
+```js
+var hammingWeight = function(n) {
+  let res = 0;
+  while (n) {
+    if (n & 1) {
+      res++;
+    }
+    n >>>= 1;
+  }
+  return res;
 };
 ```
 
@@ -251,14 +292,10 @@ function absMyPow(base, exponent) {
 }
 ```
 
+> 快速幂
+
 ```js
 var myPow = function(x, n) {
-  if (n === 0) {
-    return 1;
-  }
-  if (n === 1) {
-    return x;
-  }
   let absn = Math.abs(n);
   let result = 1;
   while (absn) {
@@ -274,22 +311,20 @@ var myPow = function(x, n) {
 
 ### 打印从 1 到最大的 n 位数 js17
 
+> 快速幂
+
 ```js
 var printNumbers = function(n) {
   let max = 1;
-  let x = 10;
+  let base = 10;
   while (n) {
     if (n & 1) {
-      max = max * x;
+      max *= base;
     }
-    x = x * x;
-    n >>= 1;
+    base *= base;
+    n = Math.floor(n / 2);
   }
-  const res = [];
-  for (let i = 1; i < max; ++i) {
-    res.push(i);
-  }
-  return res;
+  return Array.from({ length: max - 1 }, (item, index) => index + 1);
 };
 ```
 
@@ -338,180 +373,6 @@ var add = function(a, b) {
 ```
 
 ## **字符串**
-
-### 计算一篇英文文章中出现次数最多的单词及出现次数
-
-> RegExp
-
-```js
-function counts(str) {
-  let arr = str.split(/[,\.\s]/);
-  //let arr = str.match(/\w+/g);
-  let map = new Map();
-  let ret = [[], 0];
-  arr.forEach((word) => {
-    if (word !== '') {
-      if (map.has(word)) {
-        map.set(word, map.get(word) + 1);
-      } else {
-        map.set(word, 1);
-      }
-    }
-  });
-  for (let [i, j] of map) {
-    if (j > ret[1]) {
-      ret[0] = [i];
-      ret[1] = j;
-    } else if (j === ret[1]) {
-      ret[0].push(i);
-    }
-  }
-  return ret;
-}
-```
-
-### 获取 url 中的参数
-
-1. 指定参数名称，返回该参数的值 或者 空字符串
-2. 不指定参数名称，返回全部的参数对象 或者 {}
-3. 如果存在多个同名参数，则返回数组
-
-```js
-function getUrlParam(sUrl, sKey) {
-  var result = {};
-  sUrl.replace(/\??(\w+)=(\w+)&?/g, function(a, k, v) {
-    if (result[k]) {
-      var t = result[k];
-      result[k] = [].concat(t, v);
-    } else {
-      result[k] = v;
-    }
-  });
-  if (sKey) {
-    return result[sKey] || '';
-  } else {
-    return result;
-  }
-}
-```
-
-### 时间格式化输出
-
-格式说明
-对于 2014.09.05 13:14:20
-yyyy: 年份，2014
-yy: 年份，14
-MM: 月份，补满两位，09
-M: 月份, 9
-dd: 日期，补满两位，05
-d: 日期, 5
-HH: 24 制小时，补满两位，13
-H: 24 制小时，13
-hh: 12 制小时，补满两位，01
-h: 12 制小时，1
-mm: 分钟，补满两位，14
-m: 分钟，14
-ss: 秒，补满两位，20
-s: 秒，20
-w: 星期，为 ['日', '一', '二', '三', '四', '五', '六'] 中的某一个
-
-```js
-function formatDate(t, str) {
-  var obj = {
-    yyyy: t.getFullYear(),
-    yy: ('' + t.getFullYear()).slice(-2),
-    M: t.getMonth() + 1,
-    MM: ('0' + (t.getMonth() + 1)).slice(-2),
-    d: t.getDate(),
-    dd: ('0' + t.getDate()).slice(-2),
-    H: t.getHours(),
-    HH: ('0' + t.getHours()).slice(-2),
-    h: t.getHours() % 12,
-    hh: ('0' + (t.getHours() % 12)).slice(-2),
-    m: t.getMinutes(),
-    mm: ('0' + t.getMinutes()).slice(-2),
-    s: t.getSeconds(),
-    ss: ('0' + t.getSeconds()).slice(-2),
-    w: ['日', '一', '二', '三', '四', '五', '六'][t.getDay()],
-  };
-  return str.replace(/([a-z]+)/gi, function(match) {
-    return obj[match];
-  });
-}
-//2014-09-05 13:14:20 星期五
-formatDate(new Date(1409894060000), 'yyyy-MM-dd HH:mm:ss 星期w');
-```
-
-### 获取字符串的长度
-
-如果第二个参数 bUnicode255For1 === true，则所有字符长度为 1
-否则如果字符 Unicode 编码 > 255 则长度为 2
-
-```js
-function strLength(s, bUnicode255For1) {
-  let len = s.length;
-  if (bUnicode255For1) {
-    return len;
-  }
-  for (let i = 0; i < len; i++) {
-    if (s.charCodeAt(i) > 255) {
-      len++;
-    }
-  }
-  return len;
-}
-```
-
-### 邮箱字符串判断
-
-```js
-function isAvailableEmail(sEmail) {
-  var reg = /^(\w+\.?)+@\w+(\.\w+)+$/;
-  // var reg = /^([\w+\.])+@\w+(\.\w+)+$/;
-  return reg.test(sEmail);
-}
-```
-
-### 颜色字符串转换
-
-```js
-function rgb2hex(sRGB) {
-  return sRGB.replace(/^rgb\((\d+)\s*\,\s*(\d+)\s*\,\s*(\d+)\)$/g, function(
-    a,
-    r,
-    g,
-    b
-  ) {
-    if ((r, g, b >= 0 && r, g, b < 256)) return '##' + hex(r) + hex(g) + hex(b);
-  });
-}
-function hex(n) {
-  return n < 16 ? '0' + (+n).toString(16) : (+n).toString(16);
-}
-```
-
-### 将字符串转换为驼峰格式
-
-```js
-function cssStyle2DomStyle(sName) {
-  let arr = sName.split('-').filter((item) => item);
-  if (arr.length < 2) return sName;
-  return arr
-    .slice(1)
-    .reduce(
-      (pre, cur) => pre + cur.charAt().toUpperCase() + cur.slice(1),
-      arr[0]
-    );
-}
-```
-
-> Reg
-
-```js
-return sName.replace(/\-[a-z]/g, function(a, b) {
-  return b == 0 ? a.replace('-', '') : a.replace('-', '').toUpperCase();
-});
-```
 
 ### 替换空格 jz05
 
@@ -616,16 +477,35 @@ var reverseLeftWords = function(s, n) {
   while (n--) {
     arr.push(arr.shift());
   }
-  //arr.push(...arr.splice(0, n))
   return arr.join('');
 };
-
 var reverseLeftWords = function(s, n) {
-  return s.substr(n) + s.substr(0, n);
+  return s.substring(n) + s.substring(0, n);
 };
+var reverseLeftWords = function(s, n) {
+  return (s + s).substring(n, n + s.length);
+};
+```
 
-var reverseLeftWords = function(s, k) {
-  return s.slice(k) + s.slice(0, k);
+> for 循环
+
+```js
+var reverseLeftWords = function(s, n) {
+  let res = '';
+  for (let i = n; i < s.length; i++) {
+    res += s.charAt(i);
+  }
+  for (let i = 0; i < n; i++) {
+    res += s.charAt(i);
+  }
+  return res;
+};
+var reverseLeftWords = function(s, n) {
+  let res = '';
+  for (let i = n; i < n + s.length; i++) {
+    res += s.charAt(i % s.length);
+  }
+  return res;
 };
 ```
 
@@ -854,6 +734,58 @@ var isPalindrome = function(s) {
 };
 ```
 
+### 比较版本号 lc165
+
+```js
+var compareVersion = function(version1, version2) {
+  let arr1 = version1.split('.');
+  let arr2 = version2.split('.');
+  let length = Math.max(arr1.length, arr2.length);
+  while (arr1.length !== length) {
+    arr1.push(0);
+  }
+  while (arr2.length !== length) {
+    arr2.push(0);
+  }
+  for (let i = 0; i < length; i++) {
+    if (+arr1[i] < +arr2[i]) {
+      return -1;
+    }
+    if (+arr1[i] > +arr2[i]) {
+      return 1;
+    }
+  }
+  return 0;
+};
+```
+
+### 字符串解码 lc394
+
+```js
+const decodeString = (s) => {
+  let numStack = [];
+  let strStack = [];
+  let num = 0;
+  let result = '';
+  for (const char of s) {
+    if (!isNaN(char)) {
+      num = num * 10 + Number(char);
+    } else if (char === '[') {
+      strStack.push(result);
+      result = '';
+      numStack.push(num);
+      num = 0;
+    } else if (char === ']') {
+      let repeatTimes = numStack.pop();
+      result = strStack.pop() + result.repeat(repeatTimes);
+    } else {
+      result += char;
+    }
+  }
+  return result;
+};
+```
+
 ### 字符串相加 lc415
 
 > [padStart](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/padStart)
@@ -881,31 +813,6 @@ var addStrings = function(num1, num2) {
   }
   if (temp) res = '1' + res;
   return res;
-};
-```
-
-### 比较版本号 lc165
-
-```js
-var compareVersion = function(version1, version2) {
-  let arr1 = version1.split('.');
-  let arr2 = version2.split('.');
-  let length = Math.max(arr1.length, arr2.length);
-  while (arr1.length !== length) {
-    arr1.push(0);
-  }
-  while (arr2.length !== length) {
-    arr2.push(0);
-  }
-  for (let i = 0; i < length; i++) {
-    if (+arr1[i] < +arr2[i]) {
-      return -1;
-    }
-    if (+arr1[i] > +arr2[i]) {
-      return 1;
-    }
-  }
-  return 0;
 };
 ```
 
@@ -941,42 +848,18 @@ var countCharacters = function(words, chars) {
 };
 ```
 
-### 删除字符串中的所有相邻重复项
-
-```js
-var removeDuplicates = function(S) {
-  if (S.length <= 1) return S;
-  let arr = S.split('');
-  let left = 0;
-  let right = 1;
-  while (right < arr.length) {
-    if (arr[left] === arr[right] && left == 0) {
-      arr.splice(left, 2);
-    } else if (arr[left] === arr[right]) {
-      arr.splice(left, 2);
-      left--;
-      right--;
-    } else {
-      left++;
-      right++;
-    }
-  }
-  return arr.join('');
-};
-```
+### 删除字符串中的所有相邻重复项 lc1047
 
 > stack
 
 ```js
 var removeDuplicates = function(S) {
   let stack = [];
-  for (let i of S) {
-    if (!stack.length) {
-      stack.push(i);
-    } else if (i === stack[stack.length - 1]) {
-      stack.pop();
-    } else {
-      stack.push(i);
+  for (char of S) {
+    let pre = stack.pop();
+    if (pre !== char) {
+      stack.push(pre);
+      stack.push(char);
     }
   }
   return stack.join('');
@@ -992,6 +875,26 @@ var gcdOfStrings = function(str1, str2) {
   if (str1 + str2 !== str2 + str1) return '';
   const gcd = (a, b) => (0 === b ? a : gcd(b, a % b));
   return str1.substr(0, gcd(str1.length, str2.length));
+};
+```
+
+### 删除字符串中的所有相邻重复项 II lc1209
+
+> stack
+
+```js
+var removeDuplicates = function(s, k) {
+  let stack = [];
+  for (let char of s) {
+    let pre = stack.pop();
+    if (!pre || pre[0] !== char) {
+      stack.push(pre);
+      stack.push(char);
+    } else if (pre.length < k - 1) {
+      stack.push(pre + char);
+    }
+  }
+  return stack.join('');
 };
 ```
 
@@ -1013,119 +916,6 @@ var compressString = function(S) {
 ```
 
 ## **数组**
-
-### 数组去重
-
-```js
-let arr = [
-  false,
-  false,
-  true,
-  true,
-  undefined,
-  undefined,
-  null,
-  null,
-  NaN,
-  NaN,
-  0,
-  0,
-  1,
-  1,
-  { a: 1 },
-  { a: 1 },
-  { b: 1 },
-  '1',
-  '1',
-];
-```
-
-> filter indexOf(includes)
-
-O(n^2)
-
-```js
-Array.prototype.uniq = function() {
-  return this.filter((item, index) => this.indexOf(item) === index);
-};
-//[false,true,undefined,null,0,1,{ a: 1 },{ a: 1 },{ b: 1 },'1']
-```
-
-> indexOf(includes)
-
-O(n^2)
-
-```js
-Array.prototype.uniq = function() {
-  let newArr = [];
-  for (let i = 0; i < this.length; i++) {
-    let item = this[i];
-    if (newArr.indexOf(item) == -1) {
-      newArr.push(item);
-    }
-  }
-  return newArr;
-};
-//[false,true,undefined,null,NaN,NaN,0,1,{ a: 1 },{ a: 1 },{ b: 1 },'1']
-//去除NaN
-Array.prototype.uniq = function() {
-  var res = [];
-  var flag = true;
-  for (var i = 0; i < this.length; i++) {
-    if (res.indexOf(this[i]) == -1) {
-      if (this[i] != this[i]) {
-        if (flag) {
-          res.push(this[i]);
-          flag = false;
-        }
-      } else {
-        res.push(this[i]);
-      }
-    }
-  }
-  return res;
-};
-//[false,true,undefined,null,NaN,0,1,{ a: 1 },{ a: 1 },{ b: 1 },'1']
-```
-
-> hash
-
-O(n)
-
-```js
-Array.prototype.uniq = function() {
-  let newArr = [];
-  let obj = {};
-  for (let i = 0; i < this.length; i++) {
-    let item = this[i];
-    let type = typeof item;
-    if (!obj[item]) {
-      newArr.push(item);
-      obj[item] = [type];
-    } else if (!obj[item].includes(type)) {
-      newArr.push(item);
-      obj[item].push(type);
-    }
-  }
-  return newArr;
-};
-//[false,true,undefined,null,NaN,0,1,{ a: 1 },'1']
-```
-
-```js
-Array.prototype.uniq = function() {
-  arr.sort();
-  let newArr = [this[0]];
-  for (let i = 0; i < this.length; i++) {
-    let item = this[i];
-    if (newArr[newArr.length - 1] !== item) {
-      newArr.push(item);
-    }
-  }
-  return newArr;
-};
-//[[0,1,'1',NaN,NaN,{ a: 1 },{ a: 1 },{ b: 1 },false,null,true,undefined]
-```
 
 ### 数组扁平化
 
@@ -1220,12 +1010,13 @@ var findRepeatNumber = function(nums) {
 
 ```js
 var findRepeatNumber = function(nums) {
-  for (var i = 0; i < nums.length; i++) {
-    while (nums[i] !== i) {
-      if (nums[i] === nums[nums[i]]) return nums[i];
-      var temp = nums[i];
-      nums[i] = nums[temp];
-      nums[temp] = temp;
+  const length = nums.length;
+  for (let i = 0; i < length; ++i) {
+    while ((num = nums[i]) !== i) {
+      if (num === nums[num]) {
+        return num;
+      }
+      [nums[i], nums[num]] = [nums[num], nums[i]];
     }
   }
 };
@@ -1288,6 +1079,43 @@ var minArray = function(numbers) {
     } else right--; // 去重
   }
   return numbers[left];
+};
+```
+
+### 矩阵中的路径 jz12 lc79
+
+> Backtracking
+
+```js
+var exist = function(board, word) {
+  if (!board) return false;
+  if (!word) return true;
+  let lenx = board.length;
+  let leny = board[0].length;
+  let num = 0;
+
+  let findPath = (i, j, num) => {
+    if (i < 0 || i >= lenx || j < 0 || j >= leny || board[i][j] != word[num]) {
+      return false;
+    }
+    if (num == word.length - 1) return true;
+    let tmp = board[i][j];
+    board[i][j] = '-';
+    let res =
+      findPath(i + 1, j, num + 1) ||
+      findPath(i - 1, j, num + 1) ||
+      findPath(i, j + 1, num + 1) ||
+      findPath(i, j - 1, num + 1);
+    board[i][j] = tmp;
+    return res;
+  };
+
+  for (let i = 0; i < lenx; i++) {
+    for (let j = 0; j < leny; j++) {
+      if (findPath(i, j, num)) return true;
+    }
+  }
+  return false;
 };
 ```
 
@@ -1539,16 +1367,15 @@ var deserialize = function(data) {
 
 ### 数组中出现次数超过一半的数字 jz39 lc169
 
-给定一个大小为 n 的数组，找到其中的多数元素。多数元素是指在数组中出现次数大于  ⌊ n/2 ⌋  的元素。
-
-你可以假设数组是非空的，并且给定的数组总是存在多数元素。
-
-排序取中间数
+> 排序
 
 ```js
+var majorityElement = function(nums) {
+  return nums.sort((a, b) => a - b)[Math.floor(nums.length / 2)];
+};
 ```
 
-hashmap
+> hashmap
 
 ```js
 var majorityElement = function(nums) {
@@ -1582,21 +1409,19 @@ var majorityElement = function(nums) {
 };
 ```
 
-投票算法
+> 摩尔投票法
+
+O(N) O(1)
 
 ```js
 var majorityElement = function(nums) {
   let count = 1;
   let majority = nums[0];
   for (let i = 1; i < nums.length; i++) {
-    if (count === 0) {
+    if (count == 0) {
       majority = nums[i];
     }
-    if (nums[i] === majority) {
-      count++;
-    } else {
-      count--;
-    }
+    nums[i] === majority ? count++ : count--;
   }
   return majority;
 };
@@ -1659,6 +1484,8 @@ var getLeastNumbers = function(arr, k) {
 
 ### 连续子数组的最大和 jz42
 
+> 滑动窗口
+
 ```js
 var maxSubArray = function(nums) {
   const len = nums.length;
@@ -1673,6 +1500,11 @@ var maxSubArray = function(nums) {
   }
   return maxSum;
 };
+```
+
+> dp
+
+```js
 ```
 
 ### 在排序数组中查找数字 I jz53-I
@@ -1723,6 +1555,28 @@ var missingNumber = function(nums) {
 };
 ```
 
+### 数组中数字出现的次数 jz56-I lc260
+
+### 数组中数字出现的次数 II jz56-II lc137
+
+> <<
+
+```js
+var singleNumber = function(nums) {
+  let bit;
+  let result = 0;
+  for (let j = 0; j < 32; j++) {
+    let cnt = 0;
+    bit = 1 << j;
+    for (let i = 0; i < nums.length; i++) {
+      if (nums[i] & bit) cnt++;
+    }
+    if (cnt % 3 !== 0) result = result | bit;
+  }
+  return result;
+};
+```
+
 ### 和为 S 的两个数字 jz57
 
 输入一个递增排序的数组和一个数字 S，在数组中查找两个数，使得他们的和正好是 S，如果有多对数字的和等于 S，输出两个数的乘积最小的。
@@ -1746,17 +1600,16 @@ var twoSum = function(nums, target) {
 };
 ```
 
-### 和为 S 的连续正数序列
+### 和为 S 的连续正数序列 jz57-II
 
 > 滑动窗口
 
 ```js
 var findContinuousSequence = function(target) {
-  let index = target % 2 === 0 ? target / 2 : (target >> 1) + 1;
   let res = [];
   let temp = [];
   let sum = 0;
-  for (let i = 1; i <= index; i++) {
+  for (let i = 1; i < target / 2 + 1; i++) {
     temp.push(i);
     sum = sum + i;
     while (sum > target) {
@@ -1764,7 +1617,7 @@ var findContinuousSequence = function(target) {
       temp.shift();
     }
     if (sum === target) {
-      temp.length >= 2 && res.push([...temp]);
+      res.push([...temp]);
     }
   }
   return res;
@@ -2129,24 +1982,24 @@ var searchRange = function(nums, target) {
 ```js
 var combinationSum = function(candidates, target) {
   let n = candidates.length;
-  let res = [];
-  let tmpPath = [];
-  let backtrack = (tmpPath, target, start) => {
+  let results = [];
+  let solution = [];
+  let backtrack = (solution, target, start) => {
     if (target < 0) {
       return;
     }
     if (target == 0) {
-      res.push(tmpPath);
+      results.push(solution.slice());
       return;
     }
     for (let i = start; i < n; i++) {
-      tmpPath.push(candidates[i]);
-      backtrack(tmpPath.slice(), target - candidates[i], i);
-      tmpPath.pop();
+      solution.push(candidates[i]);
+      backtrack(solution, target - candidates[i], i);
+      solution.pop();
     }
   };
-  backtrack(tmpPath, target, 0);
-  return res;
+  backtrack(solution, target, 0);
+  return results;
 };
 ```
 
@@ -2192,6 +2045,42 @@ var uniquePaths = function(m, n) {
 };
 ```
 
+### x 的平方根 lc69
+
+```js
+var mySqrt = function(x) {
+  var left = 1;
+  var right = (x >> 1) + 1;
+  var mid;
+  while (left <= right) {
+    mid = (left + right) >> 1;
+    if (mid * mid > x) {
+      right = mid - 1;
+    } else if (mid * mid < x) {
+      left = mid + 1;
+    } else {
+      return mid;
+    }
+  }
+  return right;
+};
+```
+
+### 合并两个有序数组 lc88
+
+```js
+var merge = function(nums1, m, nums2, n) {
+  let length = m + n;
+  while (n > 0) {
+    if (m <= 0) {
+      nums1[--length] = nums2[--n];
+      continue;
+    }
+    nums1[--length] = nums1[m - 1] >= nums2[n - 1] ? nums1[--m] : nums2[--n];
+  }
+};
+```
+
 ### 将有序数组转换为二叉搜索树 lc108
 
 一个高度平衡二叉树是指一个二叉树每个节点的左右两个子树的高度差的绝对值不超过 1。
@@ -2223,6 +2112,95 @@ var maxProfit = function(prices) {
 };
 ```
 
+### 只出现一次的数字 lc136
+
+> ^
+
+```js
+var singleNumber = function(nums) {
+  let result = 0;
+  for (let num of nums) {
+    result ^= num;
+  }
+  return result;
+};
+```
+
+### LRU 缓存机制 lc146
+
+> Array
+
+```js
+var LRUCache = function(capacity) {
+  this.max = capacity;
+  this.cache = {};
+  this.keys = [];
+};
+LRUCache.prototype.get = function(key) {
+  if (this.cache[key]) {
+    remove(this.keys, key);
+    this.keys.push(key);
+    return this.cache[key];
+  } else {
+    return -1;
+  }
+};
+LRUCache.prototype.put = function(key, value) {
+  if (this.cache[key]) {
+    this.cache[key] = value;
+    remove(this.keys, key);
+    this.keys.push(key);
+  } else {
+    this.keys.push(key);
+    this.cache[key] = value;
+    if (this.keys.length > this.max) {
+      removeCache(this.cache, this.keys, this.keys[0]);
+    }
+  }
+};
+function remove(arr, key) {
+  if (arr.length) {
+    const index = arr.indexOf(key);
+    if (index > -1) {
+      return arr.splice(index, 1);
+    }
+  }
+}
+function removeCache(cache, keys, key) {
+  cache[key] = null;
+  remove(keys, key);
+}
+```
+
+> Map
+
+```js
+var LRUCache = function(capacity) {
+  this.max = capacity;
+  this.cache = new Map();
+};
+LRUCache.prototype.get = function(key) {
+  if (this.cache.has(key)) {
+    let temp = this.cache.get(key);
+    this.cache.delete(key);
+    this.cache.set(key, temp);
+    return temp;
+  } else {
+    return -1;
+  }
+};
+LRUCache.prototype.put = function(key, value) {
+  if (this.cache.has(key)) {
+    this.cache.delete(key);
+  } else if (this.cache.size >= this.max) {
+    this.cache.delete(this.cache.keys().next().value);
+  }
+  this.cache.set(key, value);
+};
+```
+
+> hash+双链表
+
 ### 打家劫舍 lc198
 
 > dp
@@ -2239,6 +2217,73 @@ var rob = function(nums) {
     dp[i] = Math.max(dp[i - 1], nums[i] + dp[i - 2]);
   }
   return dp[n - 1];
+};
+```
+
+### 长度最小的子数组 lc209
+
+```js
+var minSubArrayLen = function(s, nums) {
+  const len = nums.length;
+  let p = 0;
+  let min = len + 1;
+  let sum = 0;
+  for (let i = 0; i < len; i++) {
+    sum += nums[i];
+    while (sum >= s) {
+      sum -= nums[p];
+      min = Math.min(i - p + 1, min);
+      p++;
+    }
+  }
+  return min == len + 1 ? 0 : min;
+};
+```
+
+### 存在重复元素 lc217
+
+> Set
+
+```js
+var containsDuplicate = function(nums) {
+  return Array.from(new Set(nums)).length != nums.length;
+};
+
+var containsDuplicate = function(nums) {
+  return [...new Set(nums)].length != nums.length;
+};
+
+var containsDuplicate = function(nums) {
+  return new Set(nums).size != nums.length;
+};
+```
+
+> hash
+
+```js
+var containsDuplicate = function(nums) {
+  let set = new Set();
+  for (let i = 0, len = nums.length; i < len; i++) {
+    if (set.has(nums[i])) {
+      return true;
+    }
+    set.add(nums[i]);
+  }
+  return false;
+};
+```
+
+> sort
+
+```js
+var containsDuplicate = function(nums) {
+  nums.sort((a, b) => a - b);
+  for (let i = 1, len = nums.length; i < len; i++) {
+    if (nums[i - 1] == nums[i]) {
+      return true;
+    }
+  }
+  return false;
 };
 ```
 
@@ -2308,6 +2353,52 @@ var lengthOfLIS = function(nums) {
 };
 ```
 
+### 两个数组的交集 lc349
+
+> filter includes
+
+```js
+var intersection = function(nums1, nums2) {
+  return [...new Set(nums1.filter((num) => nums2.includes(num)))];
+};
+```
+
+> BS
+
+O(nlogn)
+
+```js
+var intersection = function(nums1, nums2) {
+  let res = new Set();
+  nums2 = nums2.sort((a, b) => a - b);
+  let binarySearch = (arr, val) => {
+    let left = 0;
+    let right = arr.length - 1;
+    while (left <= right) {
+      let mid = (left + right) >> 1;
+      if (arr[mid] === val) {
+        return true;
+      } else if (arr[mid] > val) {
+        right = mid - 1;
+      } else {
+        left = mid + 1;
+      }
+    }
+    return false;
+  };
+  for (let i = 0; i < nums1.length; i++) {
+    if (binarySearch(nums2, nums1[i])) {
+      res.add(nums1[i]);
+    }
+  }
+  return [...res];
+};
+```
+
+### 打乱数组 lc384
+
+[数组乱序](https://juejin.im/post/5d004ad95188257c6b518056)
+
 ### 最长回文串 lc409
 
 > hash
@@ -2353,6 +2444,27 @@ let cntArea = (grid, i, j, x, y) => {
   cnt += cntArea(grid, i, j + 1, x, y);
   cnt += cntArea(grid, i, j - 1, x, y);
   return cnt;
+};
+```
+
+### 二分查找 lc704
+
+```js
+var search = function(nums, target) {
+  let left = 0;
+  let right = nums.length - 1;
+  let mid;
+  while (left <= right) {
+    mid = (left + right) >> 1;
+    if (nums[mid] > target) {
+      right = mid - 1;
+    } else if (nums[mid] < target) {
+      left = mid + 1;
+    } else {
+      return mid;
+    }
+  }
+  return -1;
 };
 ```
 
@@ -2582,7 +2694,7 @@ var validateStackSequences = function(pushed, popped) {
 };
 ```
 
-### 最小栈
+### 最小栈 lc155
 
 ```js
 var MinStack = function() {
@@ -2673,7 +2785,7 @@ var move = function(A, B, C, n) {
 > 辅助栈
 
 ```js
-function printListFromTailToHead(head) {
+function reverseList(head) {
   let res = [];
   while (head) {
     res.unshift(head.val);
@@ -2681,6 +2793,23 @@ function printListFromTailToHead(head) {
   }
   return res;
 }
+```
+
+> 反转链表
+
+```js
+var reverseList = function(head) {
+  let pre = null;
+  let node = head;
+  let next = null;
+  while (node) {
+    next = node.next;
+    node.next = pre;
+    pre = node;
+    node = next;
+  }
+  return pre;
+};
 ```
 
 ### 删除链表的结点 jz18
@@ -2716,7 +2845,7 @@ var deleteNode = function(head, val) {
 
 ### 链表中倒数第 k 个节点 jz23
 
-链表放入数组
+> 辅助数组
 
 ```js
 var getKthFromEnd = function(head, k) {
@@ -2729,7 +2858,7 @@ var getKthFromEnd = function(head, k) {
 };
 ```
 
-快慢指针
+> 快慢指针
 
 ```js
 var getKthFromEnd = function(head, k) {
@@ -2742,12 +2871,29 @@ var getKthFromEnd = function(head, k) {
     }
     fast = fast.next;
     i++;
-  }
+  }·
   return i < k ? null : slow;
 };
 ```
 
 ### 反转单向链表 jz24
+
+> 迭代
+
+```js
+var reverseList = function(head) {
+  let pre = null;
+  let node = head;
+  let next = null;
+  while (node) {
+    next = node.next;
+    node.next = pre;
+    pre = node;
+    node = next;
+  }
+  return pre;
+};
+```
 
 > 递归
 
@@ -2761,9 +2907,9 @@ var reverseList = function(head) {
 };
 ```
 
-### 合并两个有序链表 jz26
+### 合并两个有序链表 jz26 lc21
 
-递归：
+> 递归
 
 ```js
 var mergeTwoLists = function(l1, l2) {
@@ -2779,30 +2925,24 @@ var mergeTwoLists = function(l1, l2) {
 };
 ```
 
-迭代：
+> 迭代
 
 ```js
 var mergeTwoLists = function(l1, l2) {
-  let current = new ListNode();
-  const dummy = current;
-  while (l1 || l2) {
-    if (!l1) {
-      current.next = l2;
-      return dummy.next;
-    } else if (!l2) {
-      current.next = l1;
-      return dummy.next;
-    }
+  const prehead = new ListNode(-1);
+  let prev = prehead;
+  while (l1 != null && l2 != null) {
     if (l1.val <= l2.val) {
-      current.next = l1;
+      prev.next = l1;
       l1 = l1.next;
     } else {
-      current.next = l2;
+      prev.next = l2;
       l2 = l2.next;
     }
-    current = current.next;
+    prev = prev.next;
   }
-  return dummy.next;
+  prev.next = l1 === null ? l2 : l1;
+  return prehead.next;
 };
 ```
 
@@ -2882,6 +3022,46 @@ var merge2List = function(phead1, phead2) {
 };
 ```
 
+### 删除排序链表中的重复元素 lc83
+
+```js
+var deleteDuplicates = function(head) {
+  let node = head;
+  while (node && node.next) {
+    if (node.val === node.next.val) {
+      node.next = node.next.next;
+    } else {
+      node = node.next;
+    }
+  }
+  return head;
+};
+```
+
+### 分隔链表
+
+```js
+var partition = function(head, x) {
+  const beforeHead = new ListNode(0);
+  const afterHead = new ListNode(0);
+  let before = beforeHead;
+  let after = afterHead;
+  while (head) {
+    if (head.val >= x) {
+      after.next = head;
+      after = after.next;
+    } else {
+      before.next = head;
+      before = before.next;
+    }
+    head = head.next;
+  }
+  after.next = null;
+  before.next = afterHead.next;
+  return beforeHead.next;
+};
+```
+
 ### 设计链表 lc707
 
 ```js
@@ -2898,14 +3078,12 @@ class MyLinkedList {
     // 虚拟头部
     this.head = null;
   }
-
   addAtHead(val) {
     let node = new Node(val);
     node.next = this.head;
     this.head = node;
     this.length++;
   }
-
   addAtTail(val) {
     let node = new Node(val);
     let cur = this.head;
@@ -2915,7 +3093,6 @@ class MyLinkedList {
     cur.next = node;
     this.length++;
   }
-
   addAtIndex(index, val) {
     if (index <= this.length) {
       let node = new Node(val),
@@ -2936,7 +3113,6 @@ class MyLinkedList {
     } else {
     }
   }
-
   deleteAtIndex(index) {
     if (index > -1 && index < this.length) {
       let cur = this.head;
@@ -3197,16 +3373,27 @@ var isSubTree = function(A, B) {
 
 ### 二叉树的镜像 jz27
 
-递归
+> 递归
 
 ```js
 var mirrorTree = function(root) {
-  if (root == null) return null;
-  let tmp = root.left;
-  root.left = root.right;
-  root.right = tmp;
-  mirrorTree(root.left);
-  mirrorTree(root.right);
+  if (!root) return null;
+  [root.left, root.right] = [mirrorTree(root.right), mirrorTree(root.left)];
+  return root;
+};
+```
+
+> 辅助栈
+
+```js
+var mirrorTree = function(root) {
+  let stack = [root];
+  while (stack.length) {
+    let node = stack.pop();
+    if (!node) continue;
+    [node.left, node.right] = [node.right, node.left];
+    stack.push(node.left, node.right);
+  }
   return root;
 };
 ```
@@ -3229,7 +3416,7 @@ var isSame = function(left, right) {
 
 ### 从上到下打印二叉树 jz32-I
 
-辅助队列
+> 辅助队列
 
 ```js
 var levelOrder = function(root) {
@@ -3250,8 +3437,6 @@ var levelOrder = function(root) {
 
 ### 从上到下打印二叉树 II jz32-II
 
-从上到下按层打印二叉树，同一层的节点按从左到右的顺序打印，每一层打印到一行。
-
 > 辅助队列
 
 ```js
@@ -3259,17 +3444,16 @@ var levelOrder = function(root) {
   if (!root) return [];
   let queue = [root];
   let res = [];
-  let layer = 0;
   while (queue.length) {
-    res[layer] = [];
-    let len = queue.length;
-    while (len--) {
-      let first = queue.shift();
-      res[layer].push(first.val);
-      if (first.left) queue.push(first.left);
-      if (first.right) queue.push(first.right);
+    let length = queue.length;
+    let layer = [];
+    while (length--) {
+      let node = queue.shift();
+      layer.push(node.val);
+      node.left && queue.push(node.left);
+      node.right && queue.push(node.right);
     }
-    layer++;
+    res.push(layer);
   }
   return res;
 };
@@ -3360,22 +3544,20 @@ var pathSum = function(root, sum) {
 
 ```js
 var kthLargest = function(root, k) {
-  if (!root) {
-    return null;
-  }
   let stack = [];
   let index = 0;
   while (stack.length || root) {
-    while (root !== null) {
+    if (root) {
       stack.push(root);
       root = root.right;
+    } else {
+      root = stack.pop();
+      index++;
+      if (index === k) {
+        return root.val;
+      }
+      root = root.left;
     }
-    root = stack.pop();
-    index++;
-    if (index === k) {
-      return root.val;
-    }
-    root = root.left;
   }
   return null;
 };
@@ -3439,6 +3621,38 @@ var lowestCommonAncestor = function(root, p, q) {
 };
 ```
 
+### 二叉树的最近公共祖先 jz68-II lc236
+
+### 二叉搜索树中的搜索 lc700
+
+> 递归
+
+```js
+var searchBST = function(root, val) {
+  if (!root) return null;
+  if (root.val > val) {
+    return searchBST(root.left, val);
+  } else if (root.val < val) {
+    return searchBST(root.right, val);
+  } else {
+    return root;
+  }
+};
+```
+
+> 迭代
+
+```js
+var searchBST = function(root, val) {
+  while (root) {
+    if (root.val === val) return root;
+    else if (root.val > val) root = root.left;
+    else root = root.right;
+  }
+  return null;
+};
+```
+
 ### 二叉搜索树的插入 lc 701
 
 ```js
@@ -3461,7 +3675,7 @@ var insertIntoBST = function(root, val) {
 
 ```js
 var fib = function(n) {
-  return n < 2 ? n : (fib(n - 1) + fib(n - 2)) % (1e9 + 7);
+  return n < 2 ? n : fib(n - 1) + fib(n - 2);
 };
 ```
 
@@ -3471,7 +3685,7 @@ var fib = function(n) {
 var fib = function(n, n0 = 0, n1 = 1) {
   if (n == 0) return n0;
   if (n == 1) return n1;
-  return fib(n - 1, n1, (n0 + n1) % (1e9 + 7));
+  return fib(n - 1, n1, n0 + n1);
 };
 ```
 
@@ -3481,7 +3695,7 @@ var fib = function(n, n0 = 0, n1 = 1) {
 var fib = function(n) {
   let arr = [0, 1];
   for (let i = 2; i <= n; i++) {
-    arr[i] = (arr[i - 1] + arr[i - 2]) % (1e9 + 7);
+    arr[i] = arr[i - 1] + arr[i - 2];
   }
   return arr[n];
 };
@@ -3495,7 +3709,7 @@ var fib = function(n) {
     b = 1,
     sum;
   while (n--) {
-    sum = (a + b) % (1e9 + 7);
+    sum = a + b;
     a = b;
     b = sum;
   }
@@ -3510,7 +3724,7 @@ var fib = function(n) {
   let a = 0,
     b = 1;
   while (n--) {
-    [a, b] = [b, (a + b) % (1e9 + 7)];
+    [a, b] = [b, a + b];
   }
   return a;
 };
@@ -3689,34 +3903,51 @@ var longestCommonSubsequence = function(text1, text2) {
 
 [常见排序算法的最好、最坏、平均时间复杂度以及空间复杂度](https://blog.csdn.net/Big_Rotor/article/details/97971263)
 
-![](/assets/img/排序.png)
+![](/排序分类.png)
 
-![](/assets/img/排序复杂度.png)
+![](/排序复杂度.png)
 
 ### 冒泡排序
 
 平均：O(n^2)
 最好：O(n)，顺序排序，只需要进行 n-1 比较
-最差：O(n^2)，逆序排序，需要进行 n(n-1)/2 k 次比较
+最差：O(n^2)，逆序排序，需要进行 n(n-1)/2 次比较
 空间：O(1)，两两交换
 
 ```js
-var sortArray = function(nums) {
-  for (let i = 0; i < nums.length; i++) {
-    for (let j = i + 1; j < nums.length; j++) {
-      if (nums[i] > nums[j]) {
-        [nums[i], nums[j]] = [nums[j], nums[i]];
+function bubbleSort(nums) {
+  for (let i = 0; i < nums.length - 1; i++) {
+    for (let j = 0; j < nums.length - 1 - i; j++) {
+      if (nums[j] > nums[j + 1]) {
+        [nums[j], nums[j + 1]] = [nums[j + 1], nums[j]];
       }
     }
   }
   return nums;
-};
+}
+```
+
+### 选择排序
+
+平均：O(n^2)
+最好：O(n^2)
+最差：O(n^2)
+空间：O(1)，两两交换
+
+```js
+function selectionSort(arr) {
+  for (let i = 0; i < arr.length - 1; i++) {
+    let minIndex = i;
+    for (let j = i + 1; j < arr.length; j++) {
+      minIndex = arr[j] < arr[minIndex] ? j : minIndex;
+    }
+    [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
+  }
+  return arr;
+}
 ```
 
 ### 插入排序
-
-冒泡排序中，经过每一轮的排序处理后，数组后端的数都是排好序的
-插入排序中，经过每一轮的排序处理后，数组前端的数都是排好序的
 
 平均：O(n^2)
 最好：O(n)，顺序排序，只需要进行 n-1 比较
@@ -3732,6 +3963,30 @@ var sortArray = function(nums) {
   }
   return nums;
 };
+```
+
+### 希尔排序
+
+平均：O(n^1.3)
+最好：O(n)，顺序排序，只需要进行 n-1 比较
+最差：O(n^2)，逆序排序，需要进行 n(n-1)/2 次比较
+空间：O(1)，两两交换
+
+```js
+function shellSort(nums) {
+  for (
+    let gap = Math.floor(nums.length / 2);
+    gap > 0;
+    gap = Math.floor(gap / 2)
+  ) {
+    for (let i = gap; i < nums.length; i++) {
+      for (let j = i - gap; j >= 0 && nums[j] > nums[j + gap]; j -= gap) {
+        [nums[j], nums[j + gap]] = [nums[j + gap], nums[j]];
+      }
+    }
+  }
+  return nums;
+}
 ```
 
 ### 归并排序
@@ -3753,41 +4008,24 @@ var sortArray = function(nums) {
 由于合并 n 个元素需要分配一个大小为 n 的额外数组，合并完成之后，这个数组的空间就会被释放
 
 ```js
-var sortArray = function(nums) {
+function mergeSort(nums) {
   let len = nums.length;
-  if (len < 2) return nums;
+  if (len < 2) {
+    return nums;
+  }
   let mid = len >> 1;
   let left = nums.slice(0, mid);
   let right = nums.slice(mid);
-  return merge(sortArray(left), sortArray(right));
-};
-var merge = function(left, right) {
+  return merge(mergeSort(left), mergeSort(right));
+}
+function merge(left, right) {
   let res = [];
-  let i = 0;
-  let j = 0;
-  while (i < left.length && j < right.length) {
-    res.push(left[i] < right[j] ? left[i++] : right[j++]);
+  while (left.length > 0 && right.length > 0) {
+    left[0] < right[0] ? res.push(left.shift()) : res.push(right.shift());
   }
-  return res.concat(i < left.length ? left.slice(i) : right.slice(j));
-};
-```
-
-### 选择排序
-
-```js
-function selectionSort(array) {
-  for (let i = 0; i < array.length - 1; i++) {
-    let minIndex = i;
-    for (let j = i + 1; j < array.length; j++) {
-      minIndex = array[j] < array[minIndex] ? j : minIndex;
-    }
-    [array[i], array[minIndex]] = [array[minIndex], array[i]];
-  }
-  return array;
+  return res.concat(left.length ? left : right);
 }
 ```
-
-该算法的操作次数是一个等差数列 `n + (n - 1) + (n - 2) + 1` ，去掉常数项以后得出时间复杂度是 O(n \* n)
 
 ### 快速排序
 
@@ -3797,30 +4035,30 @@ function selectionSort(array) {
 
 2. 分区操作,所有元素比基准值小的摆放在基准前面，所有元素比基准值大的摆在基准的后面（相同的数可以到任一边）。
 
-3. 通过递归用这个方法讲两个子序列排序
+3. 通过递归用这个方法将两个子序列排序
 
 平均：O(nlogn)
 最差：O(n^2) 待排序的序列为正序或者逆序，每次划分只得到一个比上一次划分少一个记录的子序列，注意另一个为空。类似冒泡
 最好：O(nlogn) 每次对半分区
 
 ```js
-function quickSort(arr) {
-  if (arr.length == 0) {
-    return [];
+var quickSort = function(arr) {
+  if (arr.length <= 1) {
+    return arr;
   }
-  var cIndex = Math.floor(arr.length / 2);
-  var c = arr.splice(cIndex, 1);
-  var l = [];
-  var r = [];
+  var pivotIndex = Math.floor(arr.length / 2);
+  var pivot = arr.splice(pivotIndex, 1);
+  var left = [];
+  var right = [];
   for (var i = 0; i < arr.length; i++) {
-    if (arr[i] < c) {
-      l.push(arr[i]);
+    if (arr[i] < pivot) {
+      left.push(arr[i]);
     } else {
-      r.push(arr[i]);
+      right.push(arr[i]);
     }
   }
-  return quickSort(l).concat(c, quickSort(r));
-}
+  return quickSort(left).concat(pivot, quickSort(right));
+};
 console.log(quickSort(arr));
 ```
 
@@ -3886,46 +4124,196 @@ function heapify(array, index, size) {
 
 该算法的复杂度是 O(logN)
 
-### 排序算法选择
+### 计数排序
 
-#### 已知一个几乎有序的数组，几乎有序是指，如果把数组排好顺序的话，每个数组的移动距离不超过 K，并且 k 相对与数组长度来说很小
+### 基数排序
 
-- 时间复杂度为 O(N)
-
-1. 计数排序、基数排序
-
-不基于比较的算法的限制：不适用所有情况
-
-- 时间复杂度 O(NlogN)
-
-1. 快速排序
-
-与数组原始序列无关
-
-2. 归并排序
-
-与数组原始序列无关
-
-- 时间复杂度为 O(N^2)
-
-1. 冒泡排序、选择排序
-
-与数组原始序列无关
-
-2. 插入排序
-
-插入排序的过程与原始顺序有关
-
-每个元素的移动距离不超过 K
-
-对于本题，插入排序 O(N\*K)
-
-答案：改进后的堆排序
-
-#### 判断数组中是否有重复值。必须保证额外空间复杂度为 O(1)
-
-非递归实现堆排序
+### 桶排序
 
 ### 乱序
 
 [数组乱序](https://juejin.im/post/5d004ad95188257c6b518056)
+
+## **正则表达式**
+
+### 计算一篇英文文章中出现次数最多的单词及出现次数
+
+> RegExp
+
+```js
+function counts(str) {
+  let arr = str.split(/[,\.\s]/);
+  //let arr = str.match(/\w+/g);
+  let map = new Map();
+  let ret = [[], 0];
+  arr.forEach((word) => {
+    if (word !== '') {
+      if (map.has(word)) {
+        map.set(word, map.get(word) + 1);
+      } else {
+        map.set(word, 1);
+      }
+    }
+  });
+  for (let [i, j] of map) {
+    if (j > ret[1]) {
+      ret[0] = [i];
+      ret[1] = j;
+    } else if (j === ret[1]) {
+      ret[0].push(i);
+    }
+  }
+  return ret;
+}
+```
+
+### 获取 url 中的参数
+
+1. 指定参数名称，返回该参数的值 或者 空字符串
+2. 不指定参数名称，返回全部的参数对象 或者 {}
+3. 如果存在多个同名参数，则返回数组
+
+```js
+function getUrlParam(sUrl, sKey) {
+  var result = {};
+  sUrl.replace(/\??(\w+)=(\w+)&?/g, function(a, k, v) {
+    if (result[k]) {
+      var t = result[k];
+      result[k] = [].concat(t, v);
+    } else {
+      result[k] = v;
+    }
+  });
+  if (sKey) {
+    return result[sKey] || '';
+  } else {
+    return result;
+  }
+}
+```
+
+### 时间格式化输出
+
+格式说明
+对于 2014.09.05 13:14:20
+yyyy: 年份，2014
+yy: 年份，14
+MM: 月份，补满两位，09
+M: 月份, 9
+dd: 日期，补满两位，05
+d: 日期, 5
+HH: 24 制小时，补满两位，13
+H: 24 制小时，13
+hh: 12 制小时，补满两位，01
+h: 12 制小时，1
+mm: 分钟，补满两位，14
+m: 分钟，14
+ss: 秒，补满两位，20
+s: 秒，20
+w: 星期，为 ['日', '一', '二', '三', '四', '五', '六'] 中的某一个
+
+```js
+function formatDate(t, str) {
+  var obj = {
+    yyyy: t.getFullYear(),
+    yy: ('' + t.getFullYear()).slice(-2),
+    M: t.getMonth() + 1,
+    MM: ('0' + (t.getMonth() + 1)).slice(-2),
+    d: t.getDate(),
+    dd: ('0' + t.getDate()).slice(-2),
+    H: t.getHours(),
+    HH: ('0' + t.getHours()).slice(-2),
+    h: t.getHours() % 12,
+    hh: ('0' + (t.getHours() % 12)).slice(-2),
+    m: t.getMinutes(),
+    mm: ('0' + t.getMinutes()).slice(-2),
+    s: t.getSeconds(),
+    ss: ('0' + t.getSeconds()).slice(-2),
+    w: ['日', '一', '二', '三', '四', '五', '六'][t.getDay()],
+  };
+  return str.replace(/([a-z]+)/gi, function(match) {
+    return obj[match];
+  });
+}
+//2014-09-05 13:14:20 星期五
+formatDate(new Date(1409894060000), 'yyyy-MM-dd HH:mm:ss 星期w');
+```
+
+### 获取字符串的长度
+
+如果第二个参数 bUnicode255For1 === true，则所有字符长度为 1
+否则如果字符 Unicode 编码 > 255 则长度为 2
+
+```js
+function strLength(s, bUnicode255For1) {
+  let len = s.length;
+  if (bUnicode255For1) {
+    return len;
+  }
+  for (let i = 0; i < len; i++) {
+    if (s.charCodeAt(i) > 255) {
+      len++;
+    }
+  }
+  return len;
+}
+```
+
+### 邮箱字符串判断
+
+```js
+function isAvailableEmail(sEmail) {
+  var reg = /^(\w+\.?)+@\w+(\.\w+)+$/;
+  // var reg = /^([\w+\.])+@\w+(\.\w+)+$/;
+  return reg.test(sEmail);
+}
+```
+
+### 颜色字符串转换
+
+```js
+function rgb2hex(sRGB) {
+  return sRGB.replace(/^rgb\((\d+)\s*\,\s*(\d+)\s*\,\s*(\d+)\)$/g, function(
+    a,
+    r,
+    g,
+    b
+  ) {
+    if ((r, g, b >= 0 && r, g, b < 256)) return '##' + hex(r) + hex(g) + hex(b);
+  });
+}
+function hex(n) {
+  return n < 16 ? '0' + (+n).toString(16) : (+n).toString(16);
+}
+```
+
+### 将字符串转换为驼峰格式
+
+```js
+function cssStyle2DomStyle(sName) {
+  let arr = sName.split('-').filter((item) => item);
+  if (arr.length < 2) return sName;
+  return arr
+    .slice(1)
+    .reduce(
+      (pre, cur) => pre + cur.charAt().toUpperCase() + cur.slice(1),
+      arr[0]
+    );
+}
+```
+
+> Reg
+
+```js
+return sName.replace(/\-[a-z]/g, function(a, b) {
+  return b == 0 ? a.replace('-', '') : a.replace('-', '').toUpperCase();
+});
+```
+
+### 将浮点数点左边的数每三位添加一个逗号
+
+```js
+function format(number) {
+  return number && number.replace(/(?!^)(?=(\d{3})+\.)/g, ',');
+}
+```
